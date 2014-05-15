@@ -1,0 +1,17 @@
+#! /usr/bin/env perl
+use strict;
+use warnings;
+
+## Make that compatible with dev in code
+BEGIN{
+  my $code_dir = __FILE__;
+  $code_dir =~ s|bin/.+|lib|;
+  unshift ( @INC , $code_dir );
+}
+
+use Log::Log4perl qw/:easy/;
+Log::Log4perl->easy_init($INFO);
+
+use App::CSE;
+App::CSE->new()->main();
+exit(0);

@@ -19,7 +19,7 @@ has 'options_specs' => ( is => 'ro' , isa => 'ArrayRef[Str]', lazy_build => 1);
 # The options as slurped by getopts long
 has 'options' => ( is => 'ro' , isa => 'HashRef[Str]', lazy_build => 1);
 
-has 'index_dir' => ( is => 'ro' , isa => 'Path::Class', lazy_build => 1);
+has 'index_dir' => ( is => 'ro' , isa => 'Path::Class::Dir', lazy_build => 1);
 
 
 sub _build_index_dir{
@@ -30,7 +30,7 @@ sub _build_index_dir{
     return Path::Class::Dir->new($opt_idx);
   }
 
-  return Path::Class::Dir->new();
+  return Path::Class::Dir->new('.cse.idx');
 }
 
 sub _build_command_name{
@@ -54,8 +54,12 @@ sub _build_options_specs{
 
 sub _build_options{
   my ($self) = @_;
+
   my %options = ();
-  Getopt::Long::GetOptions(\%options, 'idx=s', @{$self->options_specs} );
+
+  my $p = Getopt::Long::Parser->new;
+  # Beware that accessing options_specs will consume the command as the first ARGV
+  $p->getoptionsfromarray(\@ARGV, \%options , 'idx=s' , @{$self->options_specs()} );
   return \%options;
 }
 

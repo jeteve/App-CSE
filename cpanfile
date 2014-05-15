@@ -6,3 +6,4 @@ requires 'Pod::Text';
 requires 'String::CamelCase';
 
 test_requires 'Test::More';
+test_requires 'File::Temp';

@@ -36,7 +36,7 @@ sub _build_index_dir{
 sub _build_command_name{
   my ($self) = @_;
   my $command_name = shift @ARGV;
-  unless( $command_name ){ die "Missing command name\n"; }
+  unless( $command_name ){ return 'help'; }
   return $command_name;
 }
 

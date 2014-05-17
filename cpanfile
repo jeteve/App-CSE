@@ -1,6 +1,7 @@
 requires 'Class::Load';
 requires 'File::Find';
 requires 'File::MimeInfo::Magic';
+requires 'File::Slurp';
 requires 'Getopt::Long';
 requires 'Log::Log4perl';
 requires 'Lucy';

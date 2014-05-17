@@ -1,5 +1,8 @@
 requires 'Class::Load';
+requires 'File::Find';
+requires 'File::MimeInfo::Magic';
 requires 'Getopt::Long';
+requires 'Log::Log4perl';
 requires 'Lucy';
 requires 'Moose';
 requires 'Path::Class::Dir';

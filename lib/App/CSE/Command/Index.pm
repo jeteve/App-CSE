@@ -4,6 +4,7 @@ use Moose;
 extends qw/App::CSE::Command/;
 
 use File::Find;
+use File::MimeInfo::Magic;
 use Path::Class::Dir;
 use Lucy::Plan::Schema;
 
@@ -41,18 +42,32 @@ sub execute{
 
   my $wanted = sub{
     my $file_name = $File::Find::name;
-    $LOGGER->info("Indexing $file_name");
+
+    my $mime_type = 'application/octet-stream';
+
+    unless( -r $file_name ){
+      $LOGGER->warn("Cannot read $file_name. Skipping");
+      return;
+    }
+
+    if( -d $file_name ){
+      $mime_type = 'inode/directory';
+    }else{
+      $mime_type = File::MimeInfo::Magic::mimetype($file_name);
+    }
+
+    $LOGGER->info("Indexing $file_name as $mime_type");
     $indexer->add_doc({
                        path => $file_name,
-                       mime => 'text/plain'
+                       mime => $mime_type,
                       });
   };
 
   my $dir_index = $self->dir_index();
-  ( $dir_index ) = ( $dir_index =~ /(.+)/ );
 
   File::Find::find({ wanted => $wanted,
-                     no_chdir => 1
+                     no_chdir => 1,
+                     follow => 0,
                    }, $dir_index );
 
 

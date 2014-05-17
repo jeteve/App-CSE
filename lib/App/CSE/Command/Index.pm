@@ -5,7 +5,7 @@ extends qw/App::CSE::Command/;
 
 use File::Find;
 use File::MimeInfo::Magic;
-use File::Slurp;
+use File::Slurp qw//;
 
 use Path::Class::Dir;
 use Lucy::Plan::Schema;
@@ -13,12 +13,22 @@ use Lucy::Plan::Schema;
 use Log::Log4perl;
 my $LOGGER = Log::Log4perl->get_logger();
 
+my $BLACK_LIST = {
+                  'application/x-trash' => 1
+                 };
+
+
 has 'dir_index' => ( is => 'ro' , isa => 'Path::Class::Dir' , lazy_build => 1 );
 
 sub _build_dir_index{
   my ($self) = @_;
-  my $dir_index = Path::Class::Dir->new($self->cse->args()->[0] || '')->absolute();
-  return $dir_index;
+
+  if( my $to_index = $self->cse->args()->[0] ){
+    return Path::Class::Dir->new($self->cse->args()->[0])->absolute();
+  }
+
+  ## Default to the current directory
+  return Path::Class::Dir->new();
 }
 
 sub execute{
@@ -76,6 +86,10 @@ sub execute{
       $mime_type = File::MimeInfo::Magic::mimetype($file_name);
       ## Slurp the content. Assume utf8 as we are being modern.
       $content = File::Slurp::read_file($file_name, binmode => ':utf8');
+    }
+
+    if( $BLACK_LIST->{$mime_type} ){
+      return;
     }
 
     $LOGGER->info("Indexing $file_name as $mime_type");

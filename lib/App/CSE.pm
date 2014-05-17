@@ -10,6 +10,9 @@ use Path::Class::Dir;
 
 use Getopt::Long qw//;
 
+use Log::Log4perl qw/:easy/;
+
+
 has 'command_name' => ( is => 'ro', isa => 'Str', required => 1 , lazy_build => 1);
 has 'command' => ( is => 'ro', isa => 'App::CSE::Command', lazy_build => 1);
 
@@ -19,14 +22,17 @@ has 'options_specs' => ( is => 'ro' , isa => 'ArrayRef[Str]', lazy_build => 1);
 # The options as slurped by getopts long
 has 'options' => ( is => 'ro' , isa => 'HashRef[Str]', lazy_build => 1);
 
+# The arguments after any option
+has 'args' => ( is => 'ro' , isa => 'ArrayRef[Str]', lazy_build => 1);
+
+
 has 'index_dir' => ( is => 'ro' , isa => 'Path::Class::Dir', lazy_build => 1);
 
 
 sub _build_index_dir{
   my ($self) = @_;
 
-  my $opt_idx = $self->options->{idx};
-  if( $opt_idx ){
+  if( my $opt_idx = $self->options->{idx} ){
     return Path::Class::Dir->new($opt_idx);
   }
 
@@ -59,14 +65,33 @@ sub _build_options{
 
   my $p = Getopt::Long::Parser->new;
   # Beware that accessing options_specs will consume the command as the first ARGV
-  $p->getoptionsfromarray(\@ARGV, \%options , 'idx=s' , @{$self->options_specs()} );
+  $p->getoptionsfromarray(\@ARGV, \%options , 'idx=s', 'verbose', @{$self->options_specs()} );
   return \%options;
 }
 
+sub _build_args{
+  my ($self) = @_;
+  $self->options();
+  my @args = @ARGV;
+  return \@args;
+}
+
+
+=head2 main
+
+Does stuff using the command and returns an exit code.
+
+=cut
 
 sub main{
   my ($self) = @_;
-  $self->command()->execute();
+
+
+  unless( Log::Log4perl->initialized() ){
+    Log::Log4perl->easy_init($self->options()->{verbose} ? $DEBUG : $INFO);
+  }
+
+  return $self->command()->execute();
 }
 
 __PACKAGE__->meta->make_immutable();

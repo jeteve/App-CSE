@@ -13,5 +13,5 @@ use Log::Log4perl qw/:easy/;
 Log::Log4perl->easy_init($INFO);
 
 use App::CSE;
-App::CSE->new()->main();
-exit(0);
+
+exit(App::CSE->new()->main());

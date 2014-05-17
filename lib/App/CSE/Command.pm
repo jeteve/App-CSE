@@ -9,6 +9,12 @@ sub options_specs{
   return [];
 }
 
+=head execute
+
+Does stuff and return an exit code.
+
+=cut
+
 sub execute{
   my ($self) = @_;
   die "Implement me in $self";

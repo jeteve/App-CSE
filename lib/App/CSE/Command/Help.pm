@@ -21,8 +21,19 @@ sub execute{
 
 __PACKAGE__->meta->make_immutable();
 
-=head1 NAME
+=head1 SYNOPSIS
 
-App::CSE::Command::Help - Help about the cse utility
+  cse <command> [ .. options .. ] [ command arguments ]
+
+
+=head1 COMMON OPTIONS
+
+=over
+
+=item --idx
+
+Specifies the index. Default to 'current directory'/.cse.idx
+
+=back
 
 =cut

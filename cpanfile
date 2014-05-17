@@ -1,5 +1,6 @@
-requires 'Getopt::Long';
 requires 'Class::Load';
+requires 'Getopt::Long';
+requires 'Lucy';
 requires 'Moose';
 requires 'Path::Class::Dir';
 requires 'Pod::Text';

@@ -25,6 +25,40 @@ __PACKAGE__->meta->make_immutable();
 
   cse <command> [ .. options .. ] [ command arguments ]
 
+  cse Something
+
+  cse search Something
+
+  cse check
+
+=head1 COMMANDS
+
+=head2 search
+
+Searches the index for matches. Requires a query string. The name of the command is optional
+
+Examples:
+
+## Searching for the word 'Something'
+
+   cse Something
+
+## Searching for the word 'search'
+
+   cse search 'search'
+
+=head2 help
+
+Output this message. This is the default command when nothing is specified.
+
+=head2 check
+
+Checks the health status of the index. Also output various useful things.
+
+=head2 index
+
+Rebuild the index from the current directory.
+
 
 =head1 COMMON OPTIONS
 
@@ -33,6 +67,10 @@ __PACKAGE__->meta->make_immutable();
 =item --idx
 
 Specifies the index. Default to 'current directory'/.cse.idx
+
+=item --verbose
+
+Be more verbose.
 
 =back
 

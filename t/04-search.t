@@ -50,6 +50,7 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   ok( $cse->command()->isa('App::CSE::Command::Search') , "Ok got search");
   is( $cse->command()->query() , 'hello' , "Ok got good query");
   ok( $cse->command()->hits() , "Ok got hits");
+  is( $cse->command()->hits()->total_hits() , 2 , "Ok got two hits");
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
 }
 

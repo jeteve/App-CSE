@@ -27,7 +27,7 @@ sub execute{
                  };
   unless( $lucy ){
     my $err = $@;
-    $LOGGER->error(colored("The index $index_dir is not a valid lucy index. Run cse check --verbose", 'red bold'));
+    $LOGGER->error(colored("The index $index_dir is not a valid lucy index.", 'red bold'));
     $LOGGER->debug("Lucy error: $err");
     return 1;
   }

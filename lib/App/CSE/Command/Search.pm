@@ -3,18 +3,17 @@ package App::CSE::Command::Search;
 use Moose;
 extends qw/App::CSE::Command/;
 
+use App::CSE::Command::Check;
+use App::CSE::Command::Index;
+use App::CSE::Lucy::Highlight::Highlighter;
 use File::Find;
 use File::MimeInfo::Magic;
-
-use Path::Class::Dir;
-use App::CSE::Lucy::Highlight::Highlighter;
-use Lucy::Search::IndexSearcher;
-use Lucy::Search::Hits;
-
-# For colored ..
-use Term::ANSIColor;
-
 use Log::Log4perl;
+use Lucy::Search::Hits;
+use Lucy::Search::IndexSearcher;
+use Path::Class::Dir;
+use Term::ANSIColor; # For colored
+
 my $LOGGER = Log::Log4perl->get_logger();
 
 has 'query' => ( is => 'ro', isa => 'Str' , lazy_build => 1);
@@ -50,7 +49,7 @@ sub _build_hits{
 
 sub _build_query{
   my ($self) = @_;
-  my $query =  $self->cse->args->[0] || '';
+  my $query =  shift @{$self->cse->args()} || '';
   return $query;
 }
 
@@ -60,6 +59,17 @@ sub execute{
   unless( $self->query() ){
     $LOGGER->warn(colored("Missing query. Do cse help" , 'red'));
     return 1;
+  }
+
+  # Check the index.
+  my $check = App::CSE::Command::Check->new({ cse => $self->cse() });
+  if( $check->execute() ){
+    $LOGGER->info(colored("Rebuilding the index..", 'green bold'));
+    my $index_cmd = App::CSE::Command::Index->new( { cse => $self->cse() });
+    if( $index_cmd->execute() ){
+      $LOGGER->error(colored("Building index failed", 'red'));
+      return 1;
+    }
   }
 
   my $hits = $self->hits();

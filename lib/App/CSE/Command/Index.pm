@@ -4,6 +4,7 @@ use Moose;
 extends qw/App::CSE::Command/;
 
 use File::Find;
+use File::Path;
 use File::MimeInfo::Magic;
 use File::Slurp qw//;
 
@@ -34,7 +35,9 @@ sub _build_dir_index{
 sub execute{
   my ($self) = @_;
 
-  my $index_dir = $self->cse()->index_dir();
+  ## We will index as a new dir.
+  my $index_dir = $self->cse()->index_dir().'-new';
+
 
   my $schema = Lucy::Plan::Schema->new();
   my $sstring_type = Lucy::Plan::StringType->new( sortable => 1 );
@@ -107,6 +110,12 @@ sub execute{
                    }, $dir_index );
 
   $indexer->commit();
+
+  $LOGGER->info("Indexing done. Replacing dir");
+  rmtree $self->cse->index_dir()->stringify();
+
+  rename $index_dir , $self->cse->index_dir()->stringify();
+
   return 0;
 }
 

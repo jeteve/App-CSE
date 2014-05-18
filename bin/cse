@@ -12,6 +12,9 @@ BEGIN{
 use Log::Log4perl qw/:easy/;
 Log::Log4perl->easy_init($INFO);
 
+binmode STDOUT , ':utf8';
+binmode STDERR , ':utf8';
+
 use App::CSE;
 
 exit(App::CSE->new()->main());

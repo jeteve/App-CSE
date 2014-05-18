@@ -41,9 +41,29 @@ sub _build_index_dir{
 
 sub _build_command_name{
   my ($self) = @_;
-  my $command_name = shift @ARGV;
-  unless( $command_name ){ return 'help'; }
-  return $command_name;
+
+  unless( $ARGV[0] ){
+    return 'help';
+  }
+
+  if( $ARGV[0] =~ /^-/ ){
+    # The first argv is an option. Assume search
+    return 'search';
+  }
+
+  ## Ok the first argv is a normal string.
+  ## Attempt loading a command class.
+  my $command_class = eval{ Class::Load::load_class(__PACKAGE__.'::Command::'.String::CamelCase::camelize($ARGV[0])) };
+  if( $command_class ){
+    # Valid command class. Return it.
+    return shift @ARGV;
+  };
+
+
+  ## This first word is not a valid commnad class.
+  ## Assume search.
+  return 'search';
+
 }
 
 sub _build_command{

@@ -135,11 +135,11 @@ sub execute{
     my $star = '';
     if( my $stat = File::stat::stat( $hit->{path} ) ){
       if( $hit->{mtime} lt DateTime->from_epoch(epoch => $stat->mtime())->iso8601() ){
-        $star = colored('*' , 'red');
+        $star = colored('*' , 'red bold');
       }
     }
 
-    my $hit_str = colored($hit->{path}.'', 'cyan bold').' ('.$hit->{mime}.') ['.$hit->{mtime}.$star.']'.q|
+    my $hit_str = colored($hit->{path}.'', 'magenta bold').' ('.$hit->{mime}.') ['.$hit->{mtime}.$star.']'.q|
 |.$excerpt.q|
 
 |;

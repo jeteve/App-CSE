@@ -19,7 +19,7 @@ sub encode{
 
 sub highlight{
   my ($self, $text) = @_;
-  return colored($text , 'yellow bold');
+  return colored($text , 'red bold');
 }
 
 1;

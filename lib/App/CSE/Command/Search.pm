@@ -26,6 +26,9 @@ has 'hits' => ( is => 'ro', isa => 'Lucy::Search::Hits', lazy_build => 1);
 has 'searcher' => ( is => 'ro' , isa => 'Lucy::Search::IndexSearcher' , lazy_build => 1);
 has 'highlighter' => ( is => 'ro' , isa => 'App::CSE::Lucy::Highlight::Highlighter' , lazy_build => 1);
 
+has 'num' => ( is => 'ro' , isa => 'Int', lazy_build => 1);
+has 'offset' => ( is => 'ro' , isa => 'Int' , lazy_build => 1);
+
 sub _build_highlighter{
   my ($self) = @_;
   return App::CSE::Lucy::Highlight::Highlighter->new(
@@ -51,16 +54,29 @@ sub _build_searcher{
   return $searcher;
 }
 
+sub options_specs{
+  return [ 'offset=i', 'num=i' ];
+}
+
+sub _build_offset{
+  my ($self) = @_;
+  return $self->cse()->options->{offset} || 0;
+}
+
+sub _build_num{
+  my ($self) = @_;
+  my $num = $self->cse->options()->{num};
+  return defined($num) ? $num : 5;
+}
+
 sub _build_hits{
   my ($self) = @_;
 
   $LOGGER->info("Searching for '".$self->query()->to_string()."'");
 
-  my $num = $self->cse->options()->{num};
-
   my $hits = $self->searcher->hits( query => $self->query(),
-                                    offset => $self->cse->options()->{offset} || 0,
-                                    num_wanted =>  defined($num) ? $num : 5
+                                    offset => $self->offset(),
+                                    num_wanted => $self->num()
                                   );
   return $hits;
 }
@@ -110,7 +126,7 @@ sub execute{
   my $hits = $self->hits();
   my $highlighter = $self->highlighter();
 
-  $LOGGER->info(colored('Hits: '.$hits->total_hits(), 'green bold')."\n\n");
+  $LOGGER->info(colored('Hits: '. $self->offset().' - '.( $self->offset() + $self->num() - 1).' of '.$hits->total_hits(), 'green bold')."\n\n");
 
   while ( my $hit = $hits->next ) {
 

@@ -47,6 +47,20 @@ Examples:
 
    cse search 'search'
 
+=head3 search options
+
+=over
+
+=item --offset (-o)
+
+Offset in the result space. Defaults to 0.
+
+=item --num (-n)
+
+Number of result on one page. Defaults to 5.
+
+=back
+
 =head2 help
 
 Output this message. This is the default command when nothing is specified.
@@ -68,7 +82,7 @@ Rebuild the index from the current directory.
 
 Specifies the index. Default to 'current directory'/.cse.idx
 
-=item --verbose
+=item --verbose (-v)
 
 Be more verbose.
 

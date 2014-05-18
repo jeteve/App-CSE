@@ -41,6 +41,9 @@ sub _build_searcher{
 
 sub _build_hits{
   my ($self) = @_;
+
+  $LOGGER->info("Searching for '".$self->query()."'");
+
   my $hits = $self->searcher->hits( query => $self->query() );
   return $hits;
 }
@@ -55,7 +58,7 @@ sub execute{
   my ($self) = @_;
 
   unless( $self->query() ){
-    $LOGGER->warn("Missing query. Do cse help");
+    $LOGGER->warn(colored("Missing query. Do cse help" , 'red'));
     return 1;
   }
 
@@ -68,7 +71,7 @@ sub execute{
 
     my $excerpt = $highlighter->create_excerpt($hit);
 
-    my $hit_str = colored($hit->{path}.'', 'blue bold').q|
+    my $hit_str = colored($hit->{path}.'', 'cyan bold').' ('.$hit->{mime}.') '.q|
 |.$excerpt.q|
 
 |;

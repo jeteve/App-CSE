@@ -10,6 +10,8 @@ use File::MimeInfo::Magic;
 use Path::Class::Dir;
 use Lucy::Plan::Schema;
 
+use Term::ANSIColor;
+
 ## Note that using File::Slurp is done at the CSE level,
 ## avoiding undefined warnings,
 
@@ -116,7 +118,7 @@ sub execute{
   rmtree $self->cse->index_dir()->stringify();
   rename $index_dir , $self->cse->index_dir()->stringify();
 
-  $LOGGER->info("Index moved to ".$self->cse()->index_dir()->stringify());
+  $LOGGER->info(colored("Index moved to ".$self->cse()->index_dir()->stringify(), 'green bold'));
 
   return 0;
 }

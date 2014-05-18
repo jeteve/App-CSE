@@ -17,7 +17,8 @@ use Term::ANSIColor; # For colored
 
 my $LOGGER = Log::Log4perl->get_logger();
 
-has 'query' => ( is => 'ro', isa => 'Str' , lazy_build => 1);
+has 'query_str' => ( is => 'ro' , isa => 'Str' , lazy_build => 1);
+has 'query' => ( is => 'ro', isa => 'Lucy::Search::Query' , lazy_build => 1);
 
 has 'hits' => ( is => 'ro', isa => 'Lucy::Search::Hits', lazy_build => 1);
 has 'searcher' => ( is => 'ro' , isa => 'Lucy::Search::IndexSearcher' , lazy_build => 1);
@@ -48,16 +49,23 @@ sub _build_hits{
   return $hits;
 }
 
+sub _build_query_str{
+  my ($self) = @_;
+  return  shift @{$self->cse->args()} || '';
+}
+
 sub _build_query{
   my ($self) = @_;
-  my $query =  shift @{$self->cse->args()} || '';
-  return $query;
+
+  my $qp = Lucy::Search::QueryParser->new( schema => $self->searcher->get_schema,
+                                           fields => [ 'content' ] );
+  return $qp->parse($self->query_str());
 }
 
 sub execute{
   my ($self) = @_;
 
-  unless( $self->query() ){
+  unless( $self->query_str() ){
     $LOGGER->warn(colored("Missing query. Do cse help" , 'red'));
     return 1;
   }

@@ -95,7 +95,7 @@ sub execute{
       return;
     }
 
-    $LOGGER->info("Indexing $file_name as $mime_type");
+    $LOGGER->debug("Indexing $file_name as $mime_type");
     $indexer->add_doc({
                        path => $file_name,
                        mime => $mime_type,
@@ -111,10 +111,10 @@ sub execute{
 
   $indexer->commit();
 
-  $LOGGER->info("Indexing done. Replacing dir");
   rmtree $self->cse->index_dir()->stringify();
-
   rename $index_dir , $self->cse->index_dir()->stringify();
+
+  $LOGGER->info("Index moved to ".$self->cse()->index_dir()->stringify());
 
   return 0;
 }

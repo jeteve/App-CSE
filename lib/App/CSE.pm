@@ -85,7 +85,7 @@ sub _build_options{
 
   my $p = Getopt::Long::Parser->new;
   # Beware that accessing options_specs will consume the command as the first ARGV
-  $p->getoptionsfromarray(\@ARGV, \%options , 'idx=s', 'verbose', @{$self->options_specs()} );
+  $p->getoptions(\%options , 'idx=s', 'verbose+', @{$self->options_specs()} );
   return \%options;
 }
 
@@ -101,7 +101,7 @@ log4perl.rootLogger= INFO, Screen
 log4perl.appender.Screen = Log::Log4perl::Appender::Screen
 log4perl.appender.Screen.stderr = 0
 log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
-log4perl.appender.Logfile.layout.ConversionPattern = %m%n
+log4perl.appender.Screen.layout.ConversionPattern=%m%n
 |;
 
 my $verbose_log = q|
@@ -109,7 +109,7 @@ log4perl.rootLogger= TRACE, Screen
 log4perl.appender.Screen = Log::Log4perl::Appender::Screen
 log4perl.appender.Screen.stderr = 0
 log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
-log4perl.appender.Logfile.layout.ConversionPattern = %d [%p] %m%n
+log4perl.appender.Screen.layout.ConversionPattern = %d [%p] %m%n
 |;
 
 
@@ -124,10 +124,10 @@ sub main{
 
   unless( Log::Log4perl->initialized() ){
 
-    unless( $self->options()->{verbose} ){
-      Log::Log4perl::init(\$standard_log);
-    }else{
+    if( $self->options()->{verbose} ){
       Log::Log4perl::init(\$verbose_log);
+    }else{
+      Log::Log4perl::init(\$standard_log);
     }
   }
 

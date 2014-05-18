@@ -11,7 +11,7 @@ use File::Temp;
 
   my $dir = File::Temp->newdir( CLEANUP => 1 );
 
-  local @ARGV = ( 'check' , '--idx='.$dir , 'blablabla' );
+  local @ARGV = ( 'check' , '--idx='.$dir , '--verbose' , 'blablabla' );
 
   my $cse = App::CSE->new();
 
@@ -22,6 +22,7 @@ use File::Temp;
 
   ok( $cse->command()->isa('App::CSE::Command::Check') , "Ok good command instance");
   ok( $cse->main() , "Ok can execute the magic command");
+  ok( $cse->options()->{verbose} , "Ok got verbose");
 }
 
 ok(1);

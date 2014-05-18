@@ -139,7 +139,7 @@ sub execute{
       }
     }
 
-    my $hit_str = colored($hit->{path}.'', 'magenta bold').' ('.$hit->{mime}.') ['.$hit->{mtime}.$star.']'.q|
+    my $hit_str = colored($hit->{path}.'', 'magenta bold').' ('.$hit->{mime}.') ['.$hit->{mtime}.$star.']'.colored(':', 'cyan bold').q|
 |.$excerpt.q|
 
 |;

@@ -6,10 +6,12 @@ extends qw/App::CSE::Command/;
 use File::Find;
 use File::Path;
 use File::MimeInfo::Magic;
-use File::Slurp qw//;
 
 use Path::Class::Dir;
 use Lucy::Plan::Schema;
+
+## Note that using File::Slurp is done at the CSE level,
+## avoiding undefined warnings,
 
 use Log::Log4perl;
 my $LOGGER = Log::Log4perl->get_logger();

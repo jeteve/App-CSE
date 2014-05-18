@@ -10,9 +10,16 @@ Overrides the Lucy encode method to avoid any HTMLI-zation.
 
 =cut
 
+use Term::ANSIColor;
+
 sub encode{
   my ($self, $text) = @_;
   return $text;
+}
+
+sub highlight{
+  my ($self, $text) = @_;
+  return colored($text , 'yellow bold');
 }
 
 1;

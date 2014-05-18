@@ -11,6 +11,9 @@ use App::CSE::Lucy::Highlight::Highlighter;
 use Lucy::Search::IndexSearcher;
 use Lucy::Search::Hits;
 
+# For colored ..
+use Term::ANSIColor;
+
 use Log::Log4perl;
 my $LOGGER = Log::Log4perl->get_logger();
 
@@ -23,10 +26,11 @@ has 'highlighter' => ( is => 'ro' , isa => 'App::CSE::Lucy::Highlight::Highlight
 sub _build_highlighter{
   my ($self) = @_;
   return App::CSE::Lucy::Highlight::Highlighter->new(
-                                    searcher => $self->searcher(),
-                                    query    => $self->query(),
-                                    field    => 'content'
-                                   );
+                                                     searcher => $self->searcher(),
+                                                     query    => $self->query(),
+                                                     field    => 'content',
+                                                     excerpt_length => 100,
+                                                    );
 }
 
 sub _build_searcher{
@@ -58,14 +62,15 @@ sub execute{
   my $hits = $self->hits();
   my $highlighter = $self->highlighter();
 
-  $LOGGER->info("Total hits: ".$hits->total_hits());
+  $LOGGER->info(colored('Hits: '.$hits->total_hits(), 'green bold')."\n\n");
 
   while ( my $hit = $hits->next ) {
 
     my $excerpt = $highlighter->create_excerpt($hit);
 
-    my $hit_str = $hit->{path}.q| :
+    my $hit_str = colored($hit->{path}.'', 'blue bold').q|
 |.$excerpt.q|
+
 |;
 
     $LOGGER->info($hit_str);

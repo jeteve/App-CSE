@@ -1,3 +1,10 @@
+BEGIN{
+  # Avoid Slurp warnings on perl 5.8
+  no warnings 'redefine';
+  require File::Slurp;
+  use warnings;
+}
+
 use strict;
 use warnings;
 package App::CSE;
@@ -123,6 +130,9 @@ sub main{
   my ($self) = @_;
 
   unless( Log::Log4perl->initialized() ){
+
+    binmode STDOUT , ':utf8';
+    binmode STDERR , ':utf8';
 
     if( $self->options()->{verbose} ){
       Log::Log4perl::init(\$verbose_log);

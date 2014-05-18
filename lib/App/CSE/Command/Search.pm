@@ -43,7 +43,7 @@ sub _build_searcher{
 sub _build_hits{
   my ($self) = @_;
 
-  $LOGGER->info("Searching for '".$self->query()."'");
+  $LOGGER->info("Searching for '".$self->query()->to_string()."'");
 
   my $hits = $self->searcher->hits( query => $self->query() );
   return $hits;

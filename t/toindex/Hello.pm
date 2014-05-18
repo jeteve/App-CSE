@@ -10,7 +10,7 @@ __PACKAGE__->meta->make_immutable();
 
 =head1 NAME
 
-Hello - Some Hello class
+Hello - Some Hello class. Nothing to do with Helicopter
 
 =cut
 

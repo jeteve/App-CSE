@@ -28,14 +28,19 @@ use Scalar::Util qw( blessed );
 # Inside-out member vars and hand-rolled accessors.
 my %query_string;
 my %field;
+my %highlight_query;
+
 sub get_query_string { my $self = shift; return $query_string{$$self} }
 sub get_field        { my $self = shift; return $field{$$self} }
+sub highlight_query  { my $self = shift; return $highlight_query{$$self} }
 
 sub new {
     my ( $class, %args ) = @_;
     my $query_string = delete $args{query_string};
     my $field        = delete $args{field};
     my $self         = $class->SUPER::new(%args);
+
+
     confess("'query_string' param is required")
         unless defined $query_string;
     confess("Invalid query_string: '$query_string'")
@@ -44,13 +49,25 @@ sub new {
         unless defined $field;
     $query_string{$$self} = $query_string;
     $field{$$self}        = $field;
+    $highlight_query{$$self} = Lucy::Search::ORQuery->new();
+
+
     return $self;
   }
+
+sub add_matching_term{
+  my ($self, $term ) = @_;
+  $self->highlight_query()->add_child(Lucy::Search::TermQuery->new(
+                                                                   field => $self->get_field(),
+                                                                   term  => $term,
+                                                                  ));
+}
 
 sub DESTROY {
     my $self = shift;
     delete $query_string{$$self};
     delete $field{$$self};
+    delete $highlight_query{$$self};
     $self->SUPER::DESTROY;
   }
 
@@ -110,6 +127,9 @@ sub make_matcher {
   my @posting_lists;
   while ( defined( my $term = $lexicon->get_term ) ) {
     last unless $term =~ /^\Q$substring/;
+
+    $self->get_parent()->add_matching_term($term);
+
     my $posting_list = $plist_reader->posting_list(
                                                    field => $field,
                                                    term  => $term,

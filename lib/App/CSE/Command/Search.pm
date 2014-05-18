@@ -30,10 +30,19 @@ sub _build_highlighter{
   my ($self) = @_;
   return App::CSE::Lucy::Highlight::Highlighter->new(
                                                      searcher => $self->searcher(),
-                                                     query    => $self->query(),
+                                                     query    => $self->highlight_query(),
                                                      field    => 'content',
                                                      excerpt_length => 100,
                                                     );
+}
+
+sub highlight_query{
+  my ($self) = @_;
+  my $query = $self->query();
+  if( $query->isa('App::CSE::Lucy::Search::QueryPrefix') ){
+    return $query->highlight_query();
+  }
+  return $query;
 }
 
 sub _build_searcher{

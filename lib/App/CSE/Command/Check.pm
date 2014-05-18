@@ -33,7 +33,7 @@ sub execute{
   }
 
   $LOGGER->info("Index $index_dir is healthy.");
-  $LOGGER->info($lucy->get_reader()->doc_count().' files indexed.');
+  $LOGGER->info($lucy->get_reader()->doc_count().' files indexed on '.$self->cse->index_mtime()->iso8601());
   return 0;
 }
 

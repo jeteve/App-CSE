@@ -52,6 +52,7 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   is( $cse->command()->query() , 'hello' , "Ok got good query");
   ok( $cse->command()->hits() , "Ok got hits");
   is( $cse->command()->hits()->total_hits() , 3 , "Ok got two hits");
+  ok( $cse->index_mtime() , "Ok got index mtime");
 }
 
 

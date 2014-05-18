@@ -4,17 +4,17 @@ BEGIN{
   require File::Slurp;
   use warnings;
 }
-
 use strict;
 use warnings;
 package App::CSE;
+
 
 use Moose;
 use Class::Load;
 use String::CamelCase;
 
 use Path::Class::Dir;
-
+use File::stat;
 use Getopt::Long qw//;
 
 use Log::Log4perl qw/:easy/;
@@ -34,7 +34,13 @@ has 'args' => ( is => 'ro' , isa => 'ArrayRef[Str]', lazy_build => 1);
 
 
 has 'index_dir' => ( is => 'ro' , isa => 'Path::Class::Dir', lazy_build => 1);
+has 'index_mtime' => ( is => 'ro' , isa => 'DateTime' , lazy_build => 1);
 
+sub _build_index_mtime{
+  my ($self) = @_;
+  my $st = File::stat::stat($self->index_dir());
+  return DateTime->from_epoch( epoch => $st->mtime() );
+}
 
 sub _build_index_dir{
   my ($self) = @_;

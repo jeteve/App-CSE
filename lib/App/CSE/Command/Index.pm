@@ -3,8 +3,11 @@ package App::CSE::Command::Index;
 use Moose;
 extends qw/App::CSE::Command/;
 
+use DateTime;
+
 use File::Find;
 use File::Path;
+use File::stat;
 use File::MimeInfo::Magic;
 
 use Path::Class::Dir;
@@ -56,6 +59,7 @@ sub execute{
 
 
   $schema->spec_field( name => 'path' , type => $sstring_type );
+  $schema->spec_field( name => 'mtime' , type => $sstring_type );
   $schema->spec_field( name => 'mime' , type => $sstring_type );
   $schema->spec_field( name => 'content' , type => $ft_type );
 
@@ -99,10 +103,14 @@ sub execute{
       return;
     }
 
+    my $stat = File::stat::stat($file_name);
+    my $mtime = DateTime->from_epoch( epoch =>  $stat->mtime());
+
     $LOGGER->debug("Indexing $file_name as $mime_type");
     $indexer->add_doc({
                        path => $file_name,
                        mime => $mime_type,
+                       mtime => $mtime->iso8601(),
                        $content ? ( content => $content ) : ()
                       });
   };
@@ -118,7 +126,7 @@ sub execute{
   rmtree $self->cse->index_dir()->stringify();
   rename $index_dir , $self->cse->index_dir()->stringify();
 
-  $LOGGER->info(colored("Index moved to ".$self->cse()->index_dir()->stringify(), 'green bold'));
+  $LOGGER->info(colored("Index is ".$self->cse()->index_dir()->stringify(), 'green bold'));
 
   return 0;
 }

@@ -6,6 +6,7 @@ extends qw/App::CSE::Command/;
 use App::CSE::Command::Check;
 use App::CSE::Command::Index;
 use App::CSE::Lucy::Highlight::Highlighter;
+use DateTime;
 use File::Find;
 use File::MimeInfo::Magic;
 use Log::Log4perl;
@@ -81,7 +82,14 @@ sub execute{
 
     my $excerpt = $highlighter->create_excerpt($hit);
 
-    my $hit_str = colored($hit->{path}.'', 'cyan bold').' ('.$hit->{mime}.') '.q|
+    my $star = '';
+    if( my $stat = File::stat::stat( $hit->{path} ) ){
+      if( $hit->{mtime} lt DateTime->from_epoch(epoch => $stat->mtime())->iso8601() ){
+        $star = colored('*' , 'red');
+      }
+    }
+
+    my $hit_str = colored($hit->{path}.'', 'cyan bold').' ('.$hit->{mime}.') ['.$hit->{mtime}.$star.']'.q|
 |.$excerpt.q|
 
 |;

@@ -1,6 +1,8 @@
 requires 'Class::Load';
+requires 'DateTime';
 requires 'File::Find';
 requires 'File::MimeInfo::Magic';
+requires 'File::Stat';
 requires 'File::Slurp';
 requires 'Getopt::Long';
 requires 'Log::Log4perl';

@@ -56,7 +56,12 @@ sub _build_hits{
 
   $LOGGER->info("Searching for '".$self->query()->to_string()."'");
 
-  my $hits = $self->searcher->hits( query => $self->query() );
+  my $num = $self->cse->options()->{num};
+
+  my $hits = $self->searcher->hits( query => $self->query(),
+                                    offset => $self->cse->options()->{offset} || 0,
+                                    num_wanted =>  defined($num) ? $num : 5
+                                  );
   return $hits;
 }
 
@@ -76,7 +81,7 @@ sub _build_query{
   }
 
   my $qp = Lucy::Search::QueryParser->new( schema => $self->searcher->get_schema,
-                                           default_boolop => 'OR',
+                                           default_boolop => 'AND',
                                            fields => [ 'content' ] );
   $qp->set_heed_colons(1);
 

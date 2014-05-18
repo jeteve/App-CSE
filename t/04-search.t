@@ -19,6 +19,31 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
 }
 
 {
+  ## Searching just for hello
+  local @ARGV = ( 'hello' );
+  my $cse = App::CSE->new();
+  ok( $cse->command()->isa('App::CSE::Command::Search') , "Ok its a search command");
+  is_deeply( $cse->args() , [ 'hello' ] );
+}
+
+{
+  # Explicit search for hello
+  local @ARGV = ( 'search' , 'hello' );
+  my $cse = App::CSE->new();
+  ok( $cse->command()->isa('App::CSE::Command::Search') , "Ok its a search command");
+  is_deeply( $cse->args() , [ 'hello' ] );
+}
+
+{
+  # Explicit search for hello
+  local @ARGV = ( 'hello' , '--idx=blabla' );
+  my $cse = App::CSE->new();
+  ok( $cse->command()->isa('App::CSE::Command::Search') , "Ok its a search command");
+  is( $cse->options()->{idx} , 'blabla' );
+  is_deeply( $cse->args() , [ 'hello' ] );
+}
+
+{
   ## Searching the content dir for hello.
   local @ARGV = (  '--idx='.$idx_dir, 'hello');
   my $cse = App::CSE->new();
@@ -27,6 +52,7 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   ok( $cse->command()->hits() , "Ok got hits");
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
 }
+
 
 ok(1);
 done_testing();

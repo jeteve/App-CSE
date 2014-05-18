@@ -6,12 +6,14 @@ extends qw/App::CSE::Command/;
 use App::CSE::Command::Check;
 use App::CSE::Command::Index;
 use App::CSE::Lucy::Highlight::Highlighter;
+use App::CSE::Lucy::Search::QueryPrefix;
 use DateTime;
 use File::Find;
 use File::MimeInfo::Magic;
 use Log::Log4perl;
 use Lucy::Search::Hits;
 use Lucy::Search::IndexSearcher;
+use Lucy::Search::QueryParser;
 use Path::Class::Dir;
 use Term::ANSIColor; # For colored
 
@@ -57,8 +59,18 @@ sub _build_query_str{
 sub _build_query{
   my ($self) = @_;
 
+  if( $self->query_str() =~ /\*$/ ){
+    return App::CSE::Lucy::Search::QueryPrefix->new(
+                                                    field        => 'content',
+                                                    query_string => $self->query_str(),
+                                                   );
+  }
+
   my $qp = Lucy::Search::QueryParser->new( schema => $self->searcher->get_schema,
+                                           default_boolop => 'OR',
                                            fields => [ 'content' ] );
+  $qp->set_heed_colons(1);
+
   return $qp->parse($self->query_str());
 }
 

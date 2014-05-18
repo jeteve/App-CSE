@@ -96,6 +96,22 @@ sub _build_args{
   return \@args;
 }
 
+my $standard_log = q|
+log4perl.rootLogger= INFO, Screen
+log4perl.appender.Screen = Log::Log4perl::Appender::Screen
+log4perl.appender.Screen.stderr = 0
+log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
+log4perl.appender.Logfile.layout.ConversionPattern = %m%n
+|;
+
+my $verbose_log = q|
+log4perl.rootLogger= TRACE, Screen
+log4perl.appender.Screen = Log::Log4perl::Appender::Screen
+log4perl.appender.Screen.stderr = 0
+log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
+log4perl.appender.Logfile.layout.ConversionPattern = %d [%p] %m%n
+|;
+
 
 =head2 main
 
@@ -106,9 +122,13 @@ Does stuff using the command and returns an exit code.
 sub main{
   my ($self) = @_;
 
-
   unless( Log::Log4perl->initialized() ){
-    Log::Log4perl->easy_init($self->options()->{verbose} ? $DEBUG : $INFO);
+
+    unless( $self->options()->{verbose} ){
+      Log::Log4perl::init(\$standard_log);
+    }else{
+      Log::Log4perl::init(\$verbose_log);
+    }
   }
 
   return $self->command()->execute();

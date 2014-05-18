@@ -5,7 +5,6 @@ extends qw/App::CSE::Command/;
 
 use File::Find;
 use File::MimeInfo::Magic;
-use File::Slurp qw//;
 
 use Path::Class::Dir;
 use App::CSE::Lucy::Highlight::Highlighter;

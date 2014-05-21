@@ -98,9 +98,11 @@ sub execute{
 
     my $half_camel = $mime_type; $half_camel =~ s/\W/_/g;
     my $file_class_name = 'App::CSE::File::'.String::CamelCase::camelize($half_camel);
+    # Protect against unsecure class name
+    ( $file_class_name ) = ( $file_class_name =~ /^([\w:]+)$/ );
     my $file_class = eval{ Class::Load::load_class($file_class_name); };
     unless( $file_class ){
-      $LOGGER->trace(colored("No class '$file_class_name' for mimetype $mime_type",'red bold'));
+      $LOGGER->debug(colored("No class '$file_class_name' for mimetype $mime_type",'red bold'));
       return;
     }
 

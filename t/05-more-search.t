@@ -7,6 +7,7 @@ Log::Log4perl->easy_init($TRACE);
 
 use App::CSE;
 
+use Carp::Always;
 
 use File::Temp;
 use Path::Class::Dir;

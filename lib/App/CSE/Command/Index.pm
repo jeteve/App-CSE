@@ -84,8 +84,6 @@ sub execute{
       return;
     }
 
-    my $content;
-
     unless( -r $file_name ){
       $LOGGER->warn("Cannot read $file_name. Skipping");
       return;
@@ -110,16 +108,17 @@ sub execute{
     ## Build a file instance.
     my $file = $file_class->new({ mime_type => $mime_type,
                                   file_path => $file_name.'' });
-    $content = $file->content();
 
 
     my $stat = File::stat::stat($file_name);
     my $mtime = DateTime->from_epoch( epoch =>  $stat->mtime());
 
     $LOGGER->debug("Indexing $file_name as $mime_type");
+
+    my $content = $file->content();
     $indexer->add_doc({
-                       path => $file_name,
-                       mime => $mime_type,
+                       path => $file->file_path(),
+                       mime => $file->effective_mime_type(),
                        mtime => $mtime->iso8601(),
                        $content ? ( content => $content ) : ()
                       });

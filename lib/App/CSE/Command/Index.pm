@@ -90,7 +90,7 @@ sub execute{
     }
 
 
-    my $mime_type = File::MimeInfo::Magic::mimetype($file_name.'') || 'application/octect-stream';
+    my $mime_type = File::MimeInfo::Magic::mimetype($file_name.'') || 'application/octet-stream';
 
     if( $BLACK_LIST->{$mime_type} ){
       return;
@@ -100,8 +100,7 @@ sub execute{
     my $file_class_name = 'App::CSE::File::'.String::CamelCase::camelize($half_camel);
     my $file_class = eval{ Class::Load::load_class($file_class_name); };
     unless( $file_class ){
-      warn "WHOT ABOUT $file_class_name for ".$mime_type." ?";
-      $LOGGER->debug("No class for mimetype $mime_type");
+      $LOGGER->trace("No class for mimetype $mime_type");
       return;
     }
 

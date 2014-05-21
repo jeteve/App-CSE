@@ -107,7 +107,7 @@ sub execute{
 
     ## Build a file instance.
     my $file = $file_class->new({ mime_type => $mime_type,
-                                  file_path => $file_name.'' });
+                                  file_path => $file_name.'' })->effective_object();
 
 
     my $stat = File::stat::stat($file_name);
@@ -118,7 +118,7 @@ sub execute{
     my $content = $file->content();
     $indexer->add_doc({
                        path => $file->file_path(),
-                       mime => $file->effective_mime_type(),
+                       mime => $file->mime_type(),
                        mtime => $mtime->iso8601(),
                        $content ? ( content => $content ) : ()
                       });

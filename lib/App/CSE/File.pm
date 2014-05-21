@@ -13,9 +13,9 @@ sub _build_content{
   return File::Slurp::read_file($self->file_path(), binmode => ':utf8');
 }
 
-sub effective_mime_type{
+sub effective_object{
   my ($self) = @_;
-  return $self->mime_type();
+  return $self;
 }
 
 __PACKAGE__->meta->make_immutable();
@@ -28,8 +28,8 @@ App::CSE::File - A general file
 
 =head1 METHODS
 
-=head2 effective_mime_type
+=head2 effective_object
 
-Effective MIME Type of this file. Can differ from MIME_TYPE
+Effective Object. Some classes can choose to return something different.
 
 =cut

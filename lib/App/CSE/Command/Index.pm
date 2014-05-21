@@ -100,7 +100,7 @@ sub execute{
     my $file_class_name = 'App::CSE::File::'.String::CamelCase::camelize($half_camel);
     my $file_class = eval{ Class::Load::load_class($file_class_name); };
     unless( $file_class ){
-      $LOGGER->trace("No class for mimetype $mime_type");
+      $LOGGER->trace(colored("No class '$file_class_name' for mimetype $mime_type",'red bold'));
       return;
     }
 
@@ -112,7 +112,7 @@ sub execute{
     my $stat = File::stat::stat($file_name);
     my $mtime = DateTime->from_epoch( epoch =>  $stat->mtime());
 
-    $LOGGER->debug("Indexing $file_name as $mime_type");
+    $LOGGER->debug("Indexing ".$file->file_path().' as '.$file->mime_type());
 
     my $content = $file->content();
     $indexer->add_doc({

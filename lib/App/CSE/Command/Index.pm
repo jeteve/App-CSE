@@ -93,6 +93,11 @@ sub execute{
 
 
     my $mime_type = File::MimeInfo::Magic::mimetype($file_name.'') || 'application/octect-stream';
+
+    if( $BLACK_LIST->{$mime_type} ){
+      return;
+    }
+
     my $half_camel = $mime_type; $half_camel =~ s/\W/_/g;
     my $file_class_name = 'App::CSE::File::'.String::CamelCase::camelize($half_camel);
     my $file_class = eval{ Class::Load::load_class($file_class_name); };
@@ -102,14 +107,11 @@ sub execute{
       return;
     }
 
-    unless( -d $file_name ){
-      ## Slurp the content. Assume utf8 as we are being modern.
-      $content = File::Slurp::read_file($file_name, binmode => ':utf8');
-    }
+    ## Build a file instance.
+    my $file = $file_class->new({ mime_type => $mime_type,
+                                  file_path => $file_name.'' });
+    $content = $file->content();
 
-    if( $BLACK_LIST->{$mime_type} ){
-      return;
-    }
 
     my $stat = File::stat::stat($file_name);
     my $mtime = DateTime->from_epoch( epoch =>  $stat->mtime());

@@ -13,6 +13,7 @@ use File::MimeInfo::Magic;
 use Path::Class::Dir;
 use Lucy::Plan::Schema;
 
+use String::CamelCase;
 use Term::ANSIColor;
 
 ## Note that using File::Slurp is done at the CSE level,
@@ -83,7 +84,6 @@ sub execute{
       return;
     }
 
-    my $mime_type = 'application/octet-stream';
     my $content;
 
     unless( -r $file_name ){
@@ -91,10 +91,18 @@ sub execute{
       return;
     }
 
-    if( -d $file_name ){
-      $mime_type = 'inode/directory';
-    }else{
-      $mime_type = File::MimeInfo::Magic::mimetype($file_name);
+
+    my $mime_type = File::MimeInfo::Magic::mimetype($file_name.'') || 'application/octect-stream';
+    my $half_camel = $mime_type; $half_camel =~ s/\W/_/g;
+    my $file_class_name = 'App::CSE::File::'.String::CamelCase::camelize($half_camel);
+    my $file_class = eval{ Class::Load::load_class($file_class_name); };
+    unless( $file_class ){
+      warn "WHOT ABOUT $file_class_name for ".$mime_type." ?";
+      $LOGGER->debug("No class for mimetype $mime_type");
+      return;
+    }
+
+    unless( -d $file_name ){
       ## Slurp the content. Assume utf8 as we are being modern.
       $content = File::Slurp::read_file($file_name, binmode => ':utf8');
     }

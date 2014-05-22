@@ -1,6 +1,7 @@
 requires 'Carp';
 requires 'Class::Load';
 requires 'DateTime';
+requires 'Encode';
 requires 'File::Find';
 requires 'File::MimeInfo::Magic';
 requires 'File::Slurp';

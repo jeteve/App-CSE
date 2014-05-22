@@ -53,12 +53,14 @@ sub execute{
   my $tokenizer = Lucy::Analysis::StandardTokenizer->new();
 
   my $ft_anal = Lucy::Analysis::PolyAnalyzer->new(analyzers => [ $case_folder, $tokenizer ]);
+  my $ft_nohl = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, sortable => 1);
+
   my $ft_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal,
                                               highlightable => 1
                                              );
 
 
-  $schema->spec_field( name => 'path' , type => $sstring_type );
+  $schema->spec_field( name => 'path' , type => $ft_nohl );
   $schema->spec_field( name => 'mtime' , type => $sstring_type );
   $schema->spec_field( name => 'mime' , type => $sstring_type );
   $schema->spec_field( name => 'content' , type => $ft_type );
@@ -101,7 +103,7 @@ sub execute{
     ( $file_class_name ) = ( $file_class_name =~ /^([\w:]+)$/ );
     my $file_class = eval{ Class::Load::load_class($file_class_name); };
     unless( $file_class ){
-      $LOGGER->debug(colored("No class '$file_class_name' for mimetype $mime_type",'red bold'));
+      $LOGGER->debug(colored("No class '$file_class_name' for mimetype $mime_type ($file_name)",'red bold'));
       return;
     }
 

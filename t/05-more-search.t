@@ -30,7 +30,7 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   my $cse = App::CSE->new();
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
   ok( $cse->command()->hits() , "Ok got hits");
-  is( $cse->command()->hits()->total_hits() , 2 , "Ok got two hits");
+  is( $cse->command()->hits()->total_hits() , 3 , "Ok got two hits (one is a directory)");
 }
 
 {
@@ -49,6 +49,15 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
   ok( $cse->command()->hits() , "Ok got hits");
   is( $cse->command()->hits()->total_hits() , 0, "Ok got zero hit");
+}
+
+{
+  ## Searching in ini file
+  local @ARGV = (  '--idx='.$idx_dir, 'ini_file_section', $content_dir.'');
+  my $cse = App::CSE->new();
+  is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
+  ok( $cse->command()->hits() , "Ok got hits");
+  is( $cse->command()->hits()->total_hits() , 1, "Ok got zero hit");
 }
 
 

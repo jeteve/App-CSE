@@ -98,7 +98,7 @@ sub _build_query{
 
   my $qp = Lucy::Search::QueryParser->new( schema => $self->searcher->get_schema,
                                            default_boolop => 'AND',
-                                           fields => [ 'content' ] );
+                                           fields => [ 'content' , 'path' ] );
   $qp->set_heed_colons(1);
 
   return $qp->parse($self->query_str());
@@ -140,7 +140,7 @@ sub execute{
     }
 
     my $hit_str = colored($hit->{path}.'', 'magenta bold').' ('.$hit->{mime}.') ['.$hit->{mtime}.$star.']'.colored(':', 'cyan bold').q|
-|.$excerpt.q|
+|.( $excerpt || substr($hit->{content} || '' , 0 , 100 ) ).q|
 
 |;
 

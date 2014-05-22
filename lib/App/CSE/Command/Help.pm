@@ -47,6 +47,12 @@ Examples:
 
    cse search 'search'
 
+=head3 search syntax
+
+cse uses the L<Lucy> query syntax.
+
+Have a look there: URL<Lucy query syntax|https://metacpan.org/pod/distribution/Lucy/lib/Lucy/Search/QueryParser.pod>
+
 =head3 search options
 
 =over

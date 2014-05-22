@@ -1,14 +1,19 @@
 package App::CSE::File;
 
 use Moose;
+use Encode;
 use File::Slurp;
 use File::stat qw//;
 use DateTime;
+
+use Log::Log4perl;
+my $LOGGER = Log::Log4perl->get_logger();
 
 has 'cse' => ( is => 'ro' , isa => 'App::CSE' , required => 1 );
 
 has 'mime_type' => ( is => 'ro', isa => 'Str', required => 1);
 has 'file_path' => ( is => 'ro', isa => 'Str', required => 1);
+has 'encoding' => ( is => 'ro' , isa => 'Str', default => 'UTF-8');
 
 has 'content' => ( is => 'ro' , isa => 'Maybe[Str]', required => 1, lazy_build => 1 );
 
@@ -31,7 +36,13 @@ sub _build_content{
   if( $self->stat()->size() > $self->cse()->max_size() ){
     return undef;
   }
-  return File::Slurp::read_file($self->file_path(), binmode => ':utf8');
+  my $raw_content =  File::Slurp::read_file($self->file_path(), binmode => ':raw');
+  my $decoded = eval{ Encode::decode($self->encoding(), $raw_content, Encode::FB_CROAK ); };
+  unless( $decoded ){
+    $LOGGER->warn("File ".$self->file_path()." failed to be decoded as ".$self->encoding().": ".$@);
+    return;
+  }
+  return $decoded;
 }
 
 sub effective_object{

@@ -22,6 +22,7 @@ use Log::Log4perl qw/:easy/;
 
 has 'command_name' => ( is => 'ro', isa => 'Str', required => 1 , lazy_build => 1);
 has 'command' => ( is => 'ro', isa => 'App::CSE::Command', lazy_build => 1);
+has 'max_size' => ( is => 'ro' , isa => 'Int' , lazy_build => 1);
 
 # GetOpt::Long options specs.
 has 'options_specs' => ( is => 'ro' , isa => 'ArrayRef[Str]', lazy_build => 1);
@@ -40,6 +41,11 @@ sub _build_index_mtime{
   my ($self) = @_;
   my $st = File::stat::stat($self->index_dir());
   return DateTime->from_epoch( epoch => $st->mtime() );
+}
+
+sub _build_max_size{
+  my ($self) = @_;
+  return $self->options()->{max_size} || 1048576; # 1 MB default. This is the buffer size of File::Slurp
 }
 
 sub _build_index_dir{
@@ -98,7 +104,7 @@ sub _build_options{
 
   my $p = Getopt::Long::Parser->new;
   # Beware that accessing options_specs will consume the command as the first ARGV
-  $p->getoptions(\%options , 'idx=s', 'verbose+', @{$self->options_specs()} );
+  $p->getoptions(\%options , 'idx=s', 'max-size=i', 'verbose+', @{$self->options_specs()} );
   return \%options;
 }
 

@@ -28,6 +28,9 @@ sub _build_mtime{
 
 sub _build_content{
   my ($self) = @_;
+  if( $self->stat()->size() > $self->cse()->max_size() ){
+    return undef;
+  }
   return File::Slurp::read_file($self->file_path(), binmode => ':utf8');
 }
 

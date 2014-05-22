@@ -42,6 +42,15 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   is( $cse->command()->hits()->total_hits() , 1 , "Ok got one hit");
 }
 
+{
+  ## Searching a file that is really too big
+  local @ARGV = (  '--idx='.$idx_dir, 'really_big', $content_dir.'');
+  my $cse = App::CSE->new();
+  is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
+  ok( $cse->command()->hits() , "Ok got hits");
+  is( $cse->command()->hits()->total_hits() , 0, "Ok got zero hit");
+}
+
 
 
 ok(1);

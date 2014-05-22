@@ -2,11 +2,27 @@ package App::CSE::File;
 
 use Moose;
 use File::Slurp;
+use File::stat qw//;
+use DateTime;
 
 has 'mime_type' => ( is => 'ro', isa => 'Str', required => 1);
 has 'file_path' => ( is => 'ro', isa => 'Str', required => 1);
 
 has 'content' => ( is => 'ro' , isa => 'Maybe[Str]', required => 1, lazy_build => 1 );
+
+has 'stat' => ( is => 'ro' , isa => 'File::stat' , lazy_build => 1 );
+has 'mtime' => ( is => 'ro' , isa => 'DateTime' , lazy_build => 1);
+
+sub _build_stat{
+  my ($self) = @_;
+  return File::stat::stat($self->file_path());
+}
+
+sub _build_mtime{
+  my ($self) = @_;
+  return DateTime->from_epoch( epoch => $self->stat->mtime() );
+}
+
 
 sub _build_content{
   my ($self) = @_;

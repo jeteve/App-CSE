@@ -3,11 +3,10 @@ package App::CSE::Command::Index;
 use Moose;
 extends qw/App::CSE::Command/;
 
-use DateTime;
 
 use File::Find;
 use File::Path;
-use File::stat;
+
 use File::MimeInfo::Magic;
 
 use Path::Class::Dir;
@@ -111,16 +110,13 @@ sub execute{
                                   file_path => $file_name.'' })->effective_object();
 
 
-    my $stat = File::stat::stat($file_name);
-    my $mtime = DateTime->from_epoch( epoch =>  $stat->mtime());
-
     $LOGGER->debug("Indexing ".$file->file_path().' as '.$file->mime_type());
 
     my $content = $file->content();
     $indexer->add_doc({
                        path => $file->file_path(),
                        mime => $file->mime_type(),
-                       mtime => $mtime->iso8601(),
+                       mtime => $file->mtime->iso8601(),
                        $content ? ( content => $content ) : ()
                       });
   };

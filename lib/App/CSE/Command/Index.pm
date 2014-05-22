@@ -106,8 +106,9 @@ sub execute{
     }
 
     ## Build a file instance.
-    my $file = $file_class->new({ mime_type => $mime_type,
-                                  file_path => $file_name.'' })->effective_object();
+    my $file = $file_class->new({cse => $self->cse(),
+                                 mime_type => $mime_type,
+                                 file_path => $file_name.'' })->effective_object();
 
 
     $LOGGER->debug("Indexing ".$file->file_path().' as '.$file->mime_type());

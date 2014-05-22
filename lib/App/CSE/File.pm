@@ -5,6 +5,8 @@ use File::Slurp;
 use File::stat qw//;
 use DateTime;
 
+has 'cse' => ( is => 'ro' , isa => 'App::CSE' , required => 1 );
+
 has 'mime_type' => ( is => 'ro', isa => 'Str', required => 1);
 has 'file_path' => ( is => 'ro', isa => 'Str', required => 1);
 

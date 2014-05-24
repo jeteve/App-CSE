@@ -14,20 +14,56 @@ use Log::Log4perl;
 use Lucy::Search::Hits;
 use Lucy::Search::IndexSearcher;
 use Lucy::Search::QueryParser;
+use Lucy::Search::SortSpec;
+use Lucy::Search::SortRule;
 use Path::Class::Dir;
 use Term::ANSIColor; # For colored
 
 my $LOGGER = Log::Log4perl->get_logger();
 
-has 'query_str' => ( is => 'ro' , isa => 'Str' , lazy_build => 1);
-has 'query' => ( is => 'ro', isa => 'Lucy::Search::Query' , lazy_build => 1);
+# Parameter stuff
 
+# Inputs
+has 'query_str' => ( is => 'ro' , isa => 'Str' , lazy_build => 1);
+has 'num' => ( is => 'ro' , isa => 'Int', lazy_build => 1);
+has 'offset' => ( is => 'ro' , isa => 'Int' , lazy_build => 1);
+has 'sort_str' => ( is => 'ro' , isa => 'Str' , lazy_build => 1);
+
+# Calculated
+has 'query' => ( is => 'ro', isa => 'Lucy::Search::Query' , lazy_build => 1);
+has 'sort_spec' => ( is => 'ro' , isa => 'Lucy::Search::SortSpec', lazy_build => 1);
+
+# Operational stuff.
 has 'hits' => ( is => 'ro', isa => 'Lucy::Search::Hits', lazy_build => 1);
 has 'searcher' => ( is => 'ro' , isa => 'Lucy::Search::IndexSearcher' , lazy_build => 1);
 has 'highlighter' => ( is => 'ro' , isa => 'App::CSE::Lucy::Highlight::Highlighter' , lazy_build => 1);
 
-has 'num' => ( is => 'ro' , isa => 'Int', lazy_build => 1);
-has 'offset' => ( is => 'ro' , isa => 'Int' , lazy_build => 1);
+sub _build_sort_spec{
+  my ($self) = @_;
+
+  my @rules = ( Lucy::Search::SortRule->new( type => 'score'),
+                Lucy::Search::SortRule->new( field => 'path' )
+              );
+  if( $self->sort_str() eq 'score' ){
+    # Nothing to do.
+    1;
+  }elsif( $self->sort_str() eq 'path' ){
+    @rules = (
+              Lucy::Search::SortRule->new( field => 'path' ),
+              Lucy::Search::SortRule->new( type => 'score'),
+             );
+  }elsif( $self->sort_str() eq 'mtime' ){
+    @rules = (
+              Lucy::Search::SortRule->new( field => 'mtime' , reverse => 'true' ),
+              Lucy::Search::SortRule->new( field => 'path' ),
+             );
+  }else{
+    $LOGGER->error(colored("Unknown sort mode ".$self->sort_str().". Falling back to 'score'", 'red bold'));
+  }
+
+  return Lucy::Search::SortSpec->new(rules => \@rules );
+}
+
 
 sub _build_highlighter{
   my ($self) = @_;
@@ -38,6 +74,13 @@ sub _build_highlighter{
                                                      excerpt_length => 100,
                                                     );
 }
+
+=head2 highlight_query
+
+The query used to highlight the content. Will be the original
+query or the highlight query of the query prefix.
+
+=cut
 
 sub highlight_query{
   my ($self) = @_;
@@ -55,7 +98,12 @@ sub _build_searcher{
 }
 
 sub options_specs{
-  return [ 'offset=i', 'num=i' ];
+  return [ 'offset|o=i', 'num|n=i', 'sort|s=s' , 'reverse|r' ];
+}
+
+sub _build_sort_str{
+  my ($self) = @_;
+  return $self->cse()->options()->{sort} || 'score';
 }
 
 sub _build_offset{
@@ -76,7 +124,9 @@ sub _build_hits{
 
   my $hits = $self->searcher->hits( query => $self->query(),
                                     offset => $self->offset(),
-                                    num_wanted => $self->num()
+                                    num_wanted => $self->num(),
+                                    ## This segfaults :(
+                                    # sort_spec => $self->sort_spec(),
                                   );
   return $hits;
 }
@@ -126,7 +176,7 @@ sub execute{
   my $hits = $self->hits();
   my $highlighter = $self->highlighter();
 
-  $LOGGER->info(colored('Hits: '. $self->offset().' - '.( $self->offset() + $self->num() - 1).' of '.$hits->total_hits(), 'green bold')."\n\n");
+  $LOGGER->info(colored('Hits: '. $self->offset().' - '.( $self->offset() + $self->num() - 1).' of '.$hits->total_hits().' sorted by '.$self->sort_str(), 'green bold')."\n\n");
 
   while ( my $hit = $hits->next ) {
 
@@ -138,6 +188,8 @@ sub execute{
         $star = colored('*' , 'red bold');
       }
     }
+
+    $LOGGER->trace("Score: ".$hit->get_score());
 
     my $hit_str = colored($hit->{path}.'', 'magenta bold').' ('.$hit->{mime}.') ['.$hit->{mtime}.$star.']'.colored(':', 'cyan bold').q|
 |.( $excerpt || substr($hit->{content} || '' , 0 , 100 ) ).q|

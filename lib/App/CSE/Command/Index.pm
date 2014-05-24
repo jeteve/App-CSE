@@ -49,17 +49,20 @@ sub execute{
 
 
   my $schema = Lucy::Plan::Schema->new();
-  my $sstring_type = Lucy::Plan::StringType->new( sortable => 1 );
+
 
   my $case_folder = Lucy::Analysis::CaseFolder->new();
   my $tokenizer = Lucy::Analysis::StandardTokenizer->new();
 
+  # Full text analyzer.
   my $ft_anal = Lucy::Analysis::PolyAnalyzer->new(analyzers => [ $case_folder, $tokenizer ]);
-  my $ft_nohl = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, sortable => 1);
 
-  my $ft_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal,
-                                              highlightable => 1
-                                             );
+  # Full text types.
+  my $ft_nohl = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, sortable => 1);
+  my $ft_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, highlightable => 1 );
+
+  # String type
+  my $sstring_type = Lucy::Plan::StringType->new( sortable => 1 );
 
 
   $schema->spec_field( name => 'path' , type => $ft_nohl );

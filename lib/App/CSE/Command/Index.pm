@@ -85,7 +85,7 @@ sub execute{
     my $file_name = $File::Find::name;
 
     if( $file_name =~ /\/\.[^\/]+$/ ){
-      $LOGGER->info("File $file_name is hidden. Skipping");
+      $LOGGER->trace("File $file_name is hidden. Skipping");
       $File::Find::prune = 1;
       return;
     }

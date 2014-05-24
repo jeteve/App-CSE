@@ -101,6 +101,7 @@ sub make_compiler {
 1;
 
 package App::CSE::Lucy::Search::PrefixCompiler;
+
 use base qw( Lucy::Search::Compiler );
 
 sub make_matcher {
@@ -152,6 +153,7 @@ sub make_matcher {
 }
 
 package App::CSE::Lucy::Search::PrefixMatcher;
+
 use base qw( Lucy::Search::Matcher );
 
 # Inside-out member vars.

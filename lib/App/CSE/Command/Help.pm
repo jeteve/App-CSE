@@ -90,6 +90,8 @@ Rebuild the index from the current directory.
 
 Directory to index. Defaults to current directory.
 
+=back
+
 =head1 COMMON OPTIONS
 
 =over

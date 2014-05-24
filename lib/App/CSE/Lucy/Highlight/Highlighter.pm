@@ -1,4 +1,5 @@
 package App::CSE::Lucy::Highlight::Highlighter;
+
 use base 'Lucy::Highlight::Highlighter';
 
 use strict;

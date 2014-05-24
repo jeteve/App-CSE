@@ -8,7 +8,7 @@ sub effective_object{
 
   # This could have been wrongly detected as text/troff when
   # it is effectively application/x-perl
-  if( $self->content() =~ /^(?:.*?)perl(?:.*?)\n/ ){
+  if( ( $self->content() || '' ) =~ /^(?:.*?)perl(?:.*?)\n/ ){
     return $self->requalify('application/x-perl');
   }
   return $self;

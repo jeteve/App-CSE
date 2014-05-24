@@ -3,6 +3,7 @@ package App::CSE::Command::Index;
 use Moose;
 extends qw/App::CSE::Command/;
 
+use App::CSE::File;
 
 use File::Find;
 use File::Path;
@@ -14,6 +15,7 @@ use Lucy::Plan::Schema;
 
 use String::CamelCase;
 use Term::ANSIColor;
+
 
 ## Note that using File::Slurp is done at the CSE level,
 ## avoiding undefined warnings,
@@ -97,13 +99,8 @@ sub execute{
       return;
     }
 
-    my $half_camel = $mime_type; $half_camel =~ s/\W/_/g;
-    my $file_class_name = 'App::CSE::File::'.String::CamelCase::camelize($half_camel);
-    # Protect against unsecure class name
-    ( $file_class_name ) = ( $file_class_name =~ /^([\w:]+)$/ );
-    my $file_class = eval{ Class::Load::load_class($file_class_name); };
+    my $file_class = App::CSE::File->class_for_mime($mime_type, $file_name.'');
     unless( $file_class ){
-      $LOGGER->debug(colored("No class '$file_class_name' for mimetype $mime_type ($file_name)",'red bold'));
       return;
     }
 

@@ -1,10 +1,14 @@
 package App::CSE::File;
 
 use Moose;
+
+use Class::Load;
 use Encode;
 use File::Slurp;
 use File::stat qw//;
 use DateTime;
+use String::CamelCase;
+use Term::ANSIColor;
 
 use Log::Log4perl;
 my $LOGGER = Log::Log4perl->get_logger();
@@ -48,6 +52,59 @@ sub _build_content{
 sub effective_object{
   my ($self) = @_;
   return $self;
+}
+
+=head2 requalify
+
+Requalifies this object into the given mimetype.
+
+=cut
+
+sub requalify{
+  my ($self, $mimetype) = @_;
+
+  my $class = __PACKAGE__->class_for_mime($mimetype, $self->file_path());
+  unless( $class ){
+    confess("Cannot requalify in $mimetype. No class found");
+  }
+
+  return $class->new({ cse => $self->cse(),
+                       file_path => $self->file_path(),
+                       mime_type => $mimetype,
+                       ( $self->has_content() ? ( content => $self->content() ) : () )
+                     });
+}
+
+=head2 class_for_mime
+
+Returns the File subclass that goes well with the given mimetype.
+This is a Class method.
+
+You can also give a file name to make the diagnostic easier in case no
+class is found.
+
+Usage:
+
+  my $class = App::CSE::File->class_for_mime('application/x-perl');
+  my $class = App::CSE::File->class_for_mime('application/x-perl' , 'the/file/name.something');
+
+=cut
+
+sub class_for_mime{
+  my ($class, $mime_type , $file_name) = @_;
+
+  $file_name ||= 'unknown_file_name';
+
+  my $half_camel = $mime_type; $half_camel =~ s/\W/_/g;
+  my $file_class_name = 'App::CSE::File::'.String::CamelCase::camelize($half_camel);
+  # Protect against unsecure class name
+  ( $file_class_name ) = ( $file_class_name =~ /^([\w:]+)$/ );
+  my $file_class = eval{ Class::Load::load_class($file_class_name); };
+  unless( $file_class ){
+    $LOGGER->debug(colored("No class '$file_class_name' for mimetype $mime_type ($file_name)",'red bold'));
+    return undef;
+  }
+  return $file_class;
 }
 
 __PACKAGE__->meta->make_immutable();

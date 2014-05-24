@@ -15,7 +15,7 @@ use Lucy::Plan::Schema;
 
 use String::CamelCase;
 use Term::ANSIColor;
-
+use Time::HiRes;
 
 ## Note that using File::Slurp is done at the CSE level,
 ## avoiding undefined warnings,
@@ -81,6 +81,8 @@ sub execute{
 
   $LOGGER->info("Indexing files from ".$self->dir_index());
 
+  my $START_TIME = Time::HiRes::time();
+  my $NUM_INDEXED = 0;
 
   my $wanted = sub{
     my $file_name = $File::Find::name;
@@ -115,6 +117,7 @@ sub execute{
 
     $LOGGER->debug("Indexing ".$file->file_path().' as '.$file->mime_type());
 
+
     my $content = $file->content();
     $indexer->add_doc({
                        path => $file->file_path(),
@@ -123,6 +126,8 @@ sub execute{
                        mtime => $file->mtime->iso8601(),
                        $content ? ( content => $content ) : ()
                       });
+    $NUM_INDEXED++;
+
   };
   my $dir_index = $self->dir_index();
 
@@ -136,7 +141,10 @@ sub execute{
   rmtree $self->cse->index_dir()->stringify();
   rename $index_dir , $self->cse->index_dir()->stringify();
 
+  my $END_TIME = Time::HiRes::time();
+
   $LOGGER->info(colored("Index is ".$self->cse()->index_dir()->stringify(), 'green bold'));
+  $LOGGER->info("$NUM_INDEXED files indexed in ".sprintf('%.03f', ( $END_TIME - $START_TIME )).' seconds');
 
   return 0;
 }

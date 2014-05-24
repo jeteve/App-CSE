@@ -14,6 +14,7 @@ requires 'Path::Class::Dir';
 requires 'Pod::Text';
 requires 'Scalar::Util';
 requires 'String::CamelCase';
+requires 'Time::HiRes';
 
 test_requires 'Test::More';
 test_requires 'File::Temp';

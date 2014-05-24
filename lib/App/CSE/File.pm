@@ -4,6 +4,7 @@ use Moose;
 
 use Class::Load;
 use Encode;
+use File::Basename;
 use File::Slurp;
 use File::stat qw//;
 use DateTime;
@@ -17,12 +18,18 @@ has 'cse' => ( is => 'ro' , isa => 'App::CSE' , required => 1 );
 
 has 'mime_type' => ( is => 'ro', isa => 'Str', required => 1);
 has 'file_path' => ( is => 'ro', isa => 'Str', required => 1);
+has 'dir' => ( is => 'ro' , isa => 'Str' , required => 1, lazy_build => 1);
 has 'encoding' => ( is => 'ro' , isa => 'Str', default => 'UTF-8');
 
 has 'content' => ( is => 'ro' , isa => 'Maybe[Str]', required => 1, lazy_build => 1 );
 
 has 'stat' => ( is => 'ro' , isa => 'File::stat' , lazy_build => 1 );
 has 'mtime' => ( is => 'ro' , isa => 'DateTime' , lazy_build => 1);
+
+sub _build_dir{
+  my ($self) = @_;
+  return File::Basename::dirname($self->file_path());
+}
 
 sub _build_stat{
   my ($self) = @_;
@@ -71,6 +78,7 @@ sub requalify{
   return $class->new({ cse => $self->cse(),
                        file_path => $self->file_path(),
                        mime_type => $mimetype,
+                       ( $self->has_dir() ? ( dir => $self->dir() ) : () ),
                        ( $self->has_content() ? ( content => $self->content() ) : () )
                      });
 }

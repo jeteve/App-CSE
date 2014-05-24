@@ -5,9 +5,9 @@ extends qw/App::CSE::Command/;
 
 use App::CSE::File;
 
+use File::Basename;
 use File::Find;
 use File::Path;
-
 use File::MimeInfo::Magic;
 
 use Path::Class::Dir;
@@ -66,6 +66,7 @@ sub execute{
 
 
   $schema->spec_field( name => 'path' , type => $ft_nohl );
+  $schema->spec_field( name => 'dir'  , type => $sstring_type );
   $schema->spec_field( name => 'mtime' , type => $sstring_type );
   $schema->spec_field( name => 'mime' , type => $sstring_type );
   $schema->spec_field( name => 'content' , type => $ft_type );
@@ -95,7 +96,6 @@ sub execute{
       return;
     }
 
-
     my $mime_type = File::MimeInfo::Magic::mimetype($file_name.'') || 'application/octet-stream';
 
     if( $BLACK_LIST->{$mime_type} ){
@@ -118,6 +118,7 @@ sub execute{
     my $content = $file->content();
     $indexer->add_doc({
                        path => $file->file_path(),
+                       dir => $file->dir(),
                        mime => $file->mime_type(),
                        mtime => $file->mtime->iso8601(),
                        $content ? ( content => $content ) : ()

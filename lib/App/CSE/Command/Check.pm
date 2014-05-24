@@ -36,9 +36,16 @@ sub execute{
   $LOGGER->info("Index $index_dir is healthy.");
   my $schema = $lucy->get_schema();
   my @fields = @{ $schema->all_fields() };
-  $LOGGER->info("Fields: ".join(', ', map{ $_.' ('.$schema->fetch_type($_)->to_string().')'  } @fields));
+  $LOGGER->info("Fields: ".join(', ', map{ $_.' ('._scrape_lucy_class($schema->fetch_type($_)).')'  } @fields));
   $LOGGER->info($lucy->get_reader()->doc_count().' files indexed on '.$self->cse->index_mtime()->iso8601());
   return 0;
+}
+
+sub _scrape_lucy_class{
+  my ($o) = @_;
+  my $ref = ref($o);
+  $ref =~ s/Lucy::Plan:://;
+  return $ref;
 }
 
 __PACKAGE__->meta->make_immutable();

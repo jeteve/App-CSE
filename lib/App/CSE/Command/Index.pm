@@ -9,6 +9,7 @@ use File::Basename;
 use File::Find;
 use File::Path;
 use File::MimeInfo::Magic;
+#use Filesys::DiskUsage;
 
 use Path::Class::Dir;
 use Lucy::Plan::Schema;
@@ -81,8 +82,11 @@ sub execute{
 
   $LOGGER->info("Indexing files from ".$self->dir_index());
 
+  my $dir_index = $self->dir_index();
+
   my $START_TIME = Time::HiRes::time();
   my $NUM_INDEXED = 0;
+  my $TOTAL_SIZE = 0;
 
   my $wanted = sub{
     my $file_name = $File::Find::name;
@@ -127,9 +131,9 @@ sub execute{
                        $content ? ( content => $content ) : ()
                       });
     $NUM_INDEXED++;
+    $TOTAL_SIZE+= $file->stat->size();
 
   };
-  my $dir_index = $self->dir_index();
 
   File::Find::find({ wanted => $wanted,
                      no_chdir => 1,
@@ -144,7 +148,7 @@ sub execute{
   my $END_TIME = Time::HiRes::time();
 
   $LOGGER->info(colored("Index is ".$self->cse()->index_dir()->stringify(), 'green bold'));
-  $LOGGER->info("$NUM_INDEXED files indexed in ".sprintf('%.03f', ( $END_TIME - $START_TIME )).' seconds');
+  $LOGGER->info("$NUM_INDEXED files ($TOTAL_SIZE Bytes) indexed in ".sprintf('%.03f', ( $END_TIME - $START_TIME )).' seconds');
 
   return 0;
 }

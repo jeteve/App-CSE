@@ -87,6 +87,7 @@ sub execute{
 
   my $dir_index = $self->dir_index();
 
+  $LOGGER->info("Estimating size. Please wait");
   my $ESTIMATED_SIZE = Filesys::DiskUsage::du({ recursive => 1 }, $dir_index.'');
 
   my $PROGRESS_BAR =  Term::ProgressBar->new({name  => 'Indexing',
@@ -161,6 +162,8 @@ sub execute{
                    }, $dir_index );
 
   $indexer->commit();
+  $PROGRESS_BAR->update($ESTIMATED_SIZE);
+
 
   rmtree $self->cse->index_dir()->stringify();
   rename $index_dir , $self->cse->index_dir()->stringify();

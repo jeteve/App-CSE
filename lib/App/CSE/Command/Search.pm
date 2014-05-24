@@ -18,6 +18,7 @@ use Lucy::Search::SortSpec;
 use Lucy::Search::SortRule;
 use Path::Class::Dir;
 use Term::ANSIColor; # For colored
+use Time::HiRes;
 
 my $LOGGER = Log::Log4perl->get_logger();
 
@@ -189,7 +190,7 @@ sub execute{
       return 1;
     }
   }
-
+  my $start_time = Time::HiRes::time();
   my $hits = $self->hits();
   my $highlighter = $self->highlighter();
 
@@ -215,6 +216,11 @@ sub execute{
 
     $LOGGER->info($hit_str);
   }
+
+  my $stop_time = Time::HiRes::time();
+
+
+  $LOGGER->info("Search took ".sprintf('%.03f', ( $stop_time - $start_time ))." secs");
 
   return 0;
 }

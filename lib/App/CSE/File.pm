@@ -50,7 +50,7 @@ sub _build_content{
   my $raw_content =  File::Slurp::read_file($self->file_path(), binmode => ':raw');
   my $decoded = eval{ Encode::decode($self->encoding(), $raw_content, Encode::FB_CROAK ); };
   unless( $decoded ){
-    $LOGGER->warn("File ".$self->file_path()." failed to be decoded as ".$self->encoding().": ".$@);
+    $LOGGER->debug("File ".$self->file_path()." failed to be decoded as ".$self->encoding().": ".$@);
     return;
   }
   return $decoded;

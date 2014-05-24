@@ -8,14 +8,16 @@ use App::CSE::File;
 use File::Basename;
 use File::Find;
 use File::Path;
+use File::stat;
 use File::MimeInfo::Magic;
-#use Filesys::DiskUsage;
+use Filesys::DiskUsage;
 
 use Path::Class::Dir;
 use Lucy::Plan::Schema;
 
 use String::CamelCase;
 use Term::ANSIColor;
+use Term::ProgressBar;
 use Time::HiRes;
 
 ## Note that using File::Slurp is done at the CSE level,
@@ -30,6 +32,7 @@ my $BLACK_LIST = {
 
 
 has 'dir_index' => ( is => 'ro' , isa => 'Path::Class::Dir' , lazy_build => 1 );
+
 
 sub _build_dir_index{
   my ($self) = @_;
@@ -84,12 +87,32 @@ sub execute{
 
   my $dir_index = $self->dir_index();
 
+  my $ESTIMATED_SIZE = Filesys::DiskUsage::du({ recursive => 1 }, $dir_index.'');
+
+  my $PROGRESS_BAR =  Term::ProgressBar->new({name  => 'Indexing',
+                                              count => $ESTIMATED_SIZE,
+                                              ETA   => 'linear',
+                                              silent => ! $self->cse()->interactive(),
+                                             });
+
   my $START_TIME = Time::HiRes::time();
   my $NUM_INDEXED = 0;
+  my $SIZE_LOOKEDAT = 0;
   my $TOTAL_SIZE = 0;
 
   my $wanted = sub{
     my $file_name = $File::Find::name;
+
+    unless( -r $file_name ){
+      $LOGGER->warn("Cannot read $file_name. Skipping");
+      return;
+    }
+
+    my $stat = File::stat::stat($file_name.'');
+    unless( -d $file_name.'' ){
+      $SIZE_LOOKEDAT += $stat->size();
+      $PROGRESS_BAR->update($SIZE_LOOKEDAT);
+    }
 
     if( $file_name =~ /\/\.[^\/]+$/ ){
       $LOGGER->trace("File $file_name is hidden. Skipping");
@@ -97,10 +120,6 @@ sub execute{
       return;
     }
 
-    unless( -r $file_name ){
-      $LOGGER->warn("Cannot read $file_name. Skipping");
-      return;
-    }
 
     my $mime_type = File::MimeInfo::Magic::mimetype($file_name.'') || 'application/octet-stream';
 
@@ -116,6 +135,7 @@ sub execute{
     ## Build a file instance.
     my $file = $file_class->new({cse => $self->cse(),
                                  mime_type => $mime_type,
+                                 stat => $stat,
                                  file_path => $file_name.'' })->effective_object();
 
 

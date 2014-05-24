@@ -25,6 +25,8 @@ has 'command_name' => ( is => 'ro', isa => 'Str', required => 1 , lazy_build => 
 has 'command' => ( is => 'ro', isa => 'App::CSE::Command', lazy_build => 1);
 has 'max_size' => ( is => 'ro' , isa => 'Int' , lazy_build => 1);
 
+has 'interactive' => ( is => 'ro' , isa => 'Bool' , default => 0 );
+
 # GetOpt::Long options specs.
 has 'options_specs' => ( is => 'ro' , isa => 'ArrayRef[Str]', lazy_build => 1);
 

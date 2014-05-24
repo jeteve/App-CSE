@@ -6,6 +6,7 @@ requires 'File::Find';
 requires 'File::MimeInfo::Magic';
 requires 'File::Slurp';
 requires 'File::Stat';
+requires 'Filesys::DiskUsage';
 requires 'Getopt::Long';
 requires 'Log::Log4perl';
 requires 'Lucy';
@@ -14,6 +15,7 @@ requires 'Path::Class::Dir';
 requires 'Pod::Text';
 requires 'Scalar::Util';
 requires 'String::CamelCase';
+requires 'Term::ProgressBar';
 requires 'Time::HiRes';
 
 test_requires 'Test::More';

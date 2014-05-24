@@ -3,8 +3,6 @@ package App::CSE::File::TextTroff;
 use Moose;
 extends qw/App::CSE::File/;
 
-use App::CSE::File::ApplicationXPerl;
-
 sub effective_object{
   my ($self) = @_;
 

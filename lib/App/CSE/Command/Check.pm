@@ -23,6 +23,7 @@ sub execute{
   # The directory is there. Check it is a valid lucy index.
   my $lucy = eval{ my $l = Lucy::Search::IndexSearcher->new( index => $index_dir );
                    $l->get_reader();
+                   $l->get_schema();
                    $l;
                  };
   unless( $lucy ){
@@ -33,6 +34,9 @@ sub execute{
   }
 
   $LOGGER->info("Index $index_dir is healthy.");
+  my $schema = $lucy->get_schema();
+  my @fields = @{ $schema->all_fields() };
+  $LOGGER->info("Fields: ".join(', ', map{ $_.' ('.$schema->fetch_type($_)->to_string().')'  } @fields));
   $LOGGER->info($lucy->get_reader()->doc_count().' files indexed on '.$self->cse->index_mtime()->iso8601());
   return 0;
 }

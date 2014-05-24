@@ -26,11 +26,13 @@ my $LOGGER = Log::Log4perl->get_logger();
 
 # Inputs
 has 'query_str' => ( is => 'ro' , isa => 'Str' , lazy_build => 1);
+has 'dir_str' => ( is => 'ro' , isa => 'Maybe[Str]', lazy_build => 1);
 has 'num' => ( is => 'ro' , isa => 'Int', lazy_build => 1);
 has 'offset' => ( is => 'ro' , isa => 'Int' , lazy_build => 1);
 has 'sort_str' => ( is => 'ro' , isa => 'Str' , lazy_build => 1);
 
 # Calculated
+has 'filtered_query' => ( is => 'ro' , isa => 'Lucy::Search::Query' , lazy_build => 1);
 has 'query' => ( is => 'ro', isa => 'Lucy::Search::Query' , lazy_build => 1);
 has 'sort_spec' => ( is => 'ro' , isa => 'Lucy::Search::SortSpec', lazy_build => 1);
 
@@ -136,11 +138,11 @@ sub _build_num{
 sub _build_hits{
   my ($self) = @_;
 
-  $LOGGER->info("Searching for '".$self->query()->to_string()."'");
+  $LOGGER->info("Searching for '".$self->filtered_query()->to_string()."'");
 
   my $perl_version = $];
 
-  my $hits = $self->searcher->hits( query => $self->query(),
+  my $hits = $self->searcher->hits( query => $self->filtered_query(),
                                     offset => $self->offset(),
                                     num_wanted => $self->num(),
                                     ## This segfaults on perl 16 and 18 :(
@@ -152,6 +154,29 @@ sub _build_hits{
 sub _build_query_str{
   my ($self) = @_;
   return  shift @{$self->cse->args()} || '';
+}
+
+sub _build_dir_str{
+  my ($self) = @_;
+  # Give a chance to query STR.
+  $self->query_str();
+  return shift @{$self->cse->args()} || undef;
+}
+
+sub _build_filtered_query{
+  my ($self) = @_;
+  if( my $dir_str = $self->dir_str() ){
+    # Filter the query with a filter on this dir as a prefix.
+    my $fq = Lucy::Search::ANDQuery->new();
+    $fq->add_child($self->query());
+    $fq->add_child(App::CSE::Lucy::Search::QueryPrefix->new( field => 'dir',
+                                                             query_string => $dir_str.'*' )
+                  );
+    return $fq;
+  }
+
+  # General case. Same as the original query.
+  return $self->query();
 }
 
 sub _build_query{

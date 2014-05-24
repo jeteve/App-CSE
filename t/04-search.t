@@ -56,6 +56,14 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
 }
 
 {
+  ## Searching the content_dir/text_files/ for hello. Shouldnt not find anything.
+  local @ARGV = (  '--idx='.$idx_dir, 'hello', $content_dir.'/text_files');
+  my $cse = App::CSE->new();
+  is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
+  is( $cse->command()->hits()->total_hits() , 0 , "No hits there.");
+}
+
+{
   ## Searhing for heli*. Will find stuff with heliport and helicopter
   local @ARGV = (  '--idx='.$idx_dir, 'hel*', '--dir='.$content_dir.'');
   my $cse = App::CSE->new();

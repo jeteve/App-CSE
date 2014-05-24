@@ -29,15 +29,19 @@ use Scalar::Util qw( blessed );
 my %query_string;
 my %field;
 my %highlight_query;
+my %keep_case;
 
 sub get_query_string { my $self = shift; return $query_string{$$self} }
 sub get_field        { my $self = shift; return $field{$$self} }
 sub highlight_query  { my $self = shift; return $highlight_query{$$self} }
+sub keep_case        { my $self = shift; return $keep_case{$$self} }
 
 sub new {
     my ( $class, %args ) = @_;
     my $query_string = delete $args{query_string};
     my $field        = delete $args{field};
+    my $keep_case    = delete $args{keep_case} || 0;
+
     my $self         = $class->SUPER::new(%args);
 
 
@@ -47,10 +51,11 @@ sub new {
         unless $query_string =~ /\*\s*$/;
     confess("'field' param is required")
         unless defined $field;
+
     $query_string{$$self} = $query_string;
     $field{$$self}        = $field;
     $highlight_query{$$self} = Lucy::Search::ORQuery->new();
-
+    $keep_case{$$self} = $keep_case;
 
     return $self;
   }
@@ -113,8 +118,10 @@ sub make_matcher {
   my $substring = $self->get_parent->get_query_string;
   $substring =~ s/\*\s*$//;
 
-  ## Making that case insensitive.
-  $substring = lc( $substring );
+  ## Making that case insensitive only if the parent says so
+  unless( $self->get_parent->keep_case() ){
+    $substring = lc( $substring );
+  }
 
   my $field = $self->get_parent->get_field;
   my $lexicon = $lex_reader->lexicon( field => $field );

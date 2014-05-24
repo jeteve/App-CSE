@@ -170,7 +170,9 @@ sub _build_filtered_query{
     my $fq = Lucy::Search::ANDQuery->new();
     $fq->add_child($self->query());
     $fq->add_child(App::CSE::Lucy::Search::QueryPrefix->new( field => 'dir',
-                                                             query_string => $dir_str.'*' )
+                                                             query_string => $dir_str.'*',
+                                                             keep_case => 1
+                                                           )
                   );
     return $fq;
   }

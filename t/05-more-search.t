@@ -3,7 +3,7 @@ use Test::More;
 
 use Log::Log4perl qw/:easy/;
 
-Log::Log4perl->easy_init($TRACE);
+# Log::Log4perl->easy_init($TRACE);
 
 use App::CSE;
 

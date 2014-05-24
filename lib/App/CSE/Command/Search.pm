@@ -101,9 +101,24 @@ sub options_specs{
   return [ 'offset|o=i', 'num|n=i', 'sort|s=s' , 'reverse|r' ];
 }
 
+my %legit_sort = ( 'score' => 1,  'path' => 1 , 'mtime' => 1 );
+
 sub _build_sort_str{
   my ($self) = @_;
-  return $self->cse()->options()->{sort} || 'score';
+  my $sort_str =  $self->cse()->options()->{sort} || 'score';
+  unless( $legit_sort{$sort_str} ){
+    $LOGGER->error(colored("Unknown sort mode ".$sort_str.". Falling back to 'score'", 'red bold'));
+    return 'score';
+  }
+
+  my $perl_version = $];
+  if( $perl_version >= 5.016 && $sort_str ne 'score' ){
+    $LOGGER->warn(colored("A bug in Lucy doesn't allow this version of Perl($perl_version) to take sort mode (".$sort_str.") into account for now.", 'yellow bold'));
+    return 'score'
+  }
+
+
+  return $sort_str;
 }
 
 sub _build_offset{
@@ -122,11 +137,13 @@ sub _build_hits{
 
   $LOGGER->info("Searching for '".$self->query()->to_string()."'");
 
+  my $perl_version = $];
+
   my $hits = $self->searcher->hits( query => $self->query(),
                                     offset => $self->offset(),
                                     num_wanted => $self->num(),
-                                    ## This segfaults :(
-                                    # sort_spec => $self->sort_spec(),
+                                    ## This segfaults on perl 16 and 18 :(
+                                    ( $perl_version < 5.016 ) ? ( sort_spec => $self->sort_spec() ) : ()
                                   );
   return $hits;
 }

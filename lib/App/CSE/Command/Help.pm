@@ -25,10 +25,13 @@ __PACKAGE__->meta->make_immutable();
 
   cse <command> [ .. options .. ] [ command arguments ]
 
+  # Search for 'Something'
   cse Something
 
-  cse search Something
+  # Search for 'search'
+  cse search search
 
+  # Check the index.
   cse check
 
 =head1 COMMANDS
@@ -79,6 +82,13 @@ Checks the health status of the index. Also output various useful things.
 
 Rebuild the index from the current directory.
 
+=head3 index options
+
+=over
+
+=item --dir
+
+Directory to index. Defaults to current directory.
 
 =head1 COMMON OPTIONS
 

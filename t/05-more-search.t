@@ -17,7 +17,7 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
 
 {
   ## Searching for some javascript.
-  local @ARGV = (  '--idx='.$idx_dir, 'javascriptIsGreat', $content_dir.'');
+  local @ARGV = (  '--idx='.$idx_dir, 'javascriptIsGreat', '--dir='.$content_dir.'');
   my $cse = App::CSE->new();
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
   ok( $cse->command()->hits() , "Ok got hits");
@@ -26,7 +26,7 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
 
 {
   ## Searching for some ruby
-  local @ARGV = (  '--idx='.$idx_dir, 'ruby', $content_dir.'');
+  local @ARGV = (  '--idx='.$idx_dir, 'ruby');
   my $cse = App::CSE->new();
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
   ok( $cse->command()->hits() , "Ok got hits");
@@ -35,7 +35,7 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
 
 {
   ## Searching for some text file
-  local @ARGV = (  '--idx='.$idx_dir, 'search_for_text', $content_dir.'');
+  local @ARGV = (  '--idx='.$idx_dir, 'search_for_text');
   my $cse = App::CSE->new();
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
   ok( $cse->command()->hits() , "Ok got hits");
@@ -44,7 +44,7 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
 
 {
   ## Searching a file that is really too big
-  local @ARGV = (  '--idx='.$idx_dir, 'really_big', $content_dir.'');
+  local @ARGV = (  '--idx='.$idx_dir, 'really_big');
   my $cse = App::CSE->new();
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
   ok( $cse->command()->hits() , "Ok got hits");
@@ -53,7 +53,7 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
 
 {
   ## Searching in ini file
-  local @ARGV = (  '--idx='.$idx_dir, 'ini_file_section', $content_dir.'');
+  local @ARGV = (  '--idx='.$idx_dir, 'ini_file_section' );
   my $cse = App::CSE->new();
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
   ok( $cse->command()->hits() , "Ok got hits");

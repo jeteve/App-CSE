@@ -33,8 +33,8 @@ has 'dir_index' => ( is => 'ro' , isa => 'Path::Class::Dir' , lazy_build => 1 );
 sub _build_dir_index{
   my ($self) = @_;
 
-  if( my $to_index = $self->cse->args()->[0] ){
-    return Path::Class::Dir->new($self->cse->args()->[0])->absolute();
+  if( my $to_index = $self->cse->options()->{dir} ){
+    return Path::Class::Dir->new($to_index);
   }
 
   ## Default to the current directory

@@ -45,7 +45,7 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
 
 {
   ## Searching the content dir for hello.
-  local @ARGV = (  '--idx='.$idx_dir, 'hello', $content_dir.'');
+  local @ARGV = (  '--idx='.$idx_dir, 'hello', '--dir='.$content_dir.'');
   my $cse = App::CSE->new();
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
   ok( $cse->command()->isa('App::CSE::Command::Search') , "Ok got search");
@@ -57,7 +57,7 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
 
 {
   ## Searhing for heli*. Will find stuff with heliport and helicopter
-  local @ARGV = (  '--idx='.$idx_dir, 'hel*', $content_dir.'');
+  local @ARGV = (  '--idx='.$idx_dir, 'hel*', '--dir='.$content_dir.'');
   my $cse = App::CSE->new();
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
   is( $cse->command()->hits()->total_hits() , 2 , "Ok got 2 hits");

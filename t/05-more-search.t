@@ -87,6 +87,15 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   is( $cse->command()->hits()->total_hits() , 1, "Ok got one hit");
 }
 
+{
+  ## Searching for php_test
+  local @ARGV = (  '--idx='.$idx_dir, 'php_test');
+  my $cse = App::CSE->new();
+  is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
+  ok( $cse->command()->hits() , "Ok got hits");
+  is( $cse->command()->hits()->total_hits() , 1, "Ok got one hit");
+}
+
 
 
 ok(1);

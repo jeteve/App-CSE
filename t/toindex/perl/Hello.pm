@@ -3,7 +3,7 @@ package Hello;
 use Moose;
 
 sub some_method{
-  print "Doing stuff\n";
+  print "Doing stuff. Bonsoir\n";
 }
 
 __PACKAGE__->meta->make_immutable();

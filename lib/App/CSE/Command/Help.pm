@@ -90,7 +90,7 @@ Examples:
   # Searching ruby in everything but ruby files:
   cse -- 'ruby -mime:application/x-ruby'
 
-  # Note the '--' that protects the rest of the command line to be interpreted as -options.
+  # Note the '--' that prevents the rest of the command line to be interpreted as -options.
 
 =head3 search options
 

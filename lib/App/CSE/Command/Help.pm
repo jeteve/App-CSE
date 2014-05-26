@@ -30,6 +30,11 @@ sub execute{
 
 __PACKAGE__->meta->make_immutable();
 
+__END__
+
+=head1 NAME
+
+App::CSE::Command::Help - cse's help
 
 =head1 SYNOPSIS
 

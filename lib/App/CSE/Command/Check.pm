@@ -52,6 +52,6 @@ __PACKAGE__->meta->make_immutable();
 
 =head1 NAME
 
-App::CSE::Command::Help - Help about the cse utility
+App::CSE::Command::Check - Checks and display info about an index.
 
 =cut

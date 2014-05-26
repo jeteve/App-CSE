@@ -256,6 +256,6 @@ __PACKAGE__->meta->make_immutable();
 
 =head1 NAME
 
-App::CSE::Command::Index - Indexes a directory
+App::CSE::Command::Search - Search the index for keywords or queries.
 
 =cut

@@ -24,8 +24,17 @@ use Log::Log4perl qw/:easy/;
 
 App::CSE - Code search engine. Implements the 'cse' program
 
-=head1 SYNOPSIS
+=head1 INSTALLATION
 
+Using system wide cpan:
+
+   sudo cpan -i App::CSE
+
+Using cpanm:
+
+   cpanm App::CSE
+
+=head1 SYNOPSIS
 
   cse
 
@@ -64,6 +73,18 @@ See L<App::CSE::Command::Help> for a list of available commands and options.
 =head1 LOGGING
 
 App::CSE uses L<Log::Log4perl>
+
+=head1 BUILD STATUS
+
+=begin html
+
+<a href="https://travis-ci.org/jeteve/App-CSE"><img src="https://travis-ci.org/jeteve/App-CSE.svg?branch=master"></a>
+
+=end html
+
+=head1 COPYRIGHT
+
+See L<App::CSE::Command::Help>
 
 =cut
 
@@ -180,12 +201,6 @@ log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
 log4perl.appender.Screen.layout.ConversionPattern = %d [%p] %m%n
 |;
 
-
-=head2 main
-
-Does stuff using the command and returns an exit code.
-
-=cut
 
 sub main{
   my ($self) = @_;

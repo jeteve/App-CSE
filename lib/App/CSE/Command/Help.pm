@@ -18,14 +18,18 @@ sub execute{
     my $p2txt = Pod::Text->new();
     $p2txt->output_string(\$output);
     $p2txt->parse_file(__FILE__);
+    $LOGGER->info("This is cse version ".$self->cse()->version());
     $LOGGER->info($output);
   }else{
-    Pod::Usage::pod2usage( -input => __FILE__ , -verbose => 2 );
+    Pod::Usage::pod2usage( -input => __FILE__ , -verbose => 2,
+                           -message => 'This is cse version '.$self->cse()->version()
+                         );
   }
   return 1;
 }
 
 __PACKAGE__->meta->make_immutable();
+
 
 =head1 SYNOPSIS
 

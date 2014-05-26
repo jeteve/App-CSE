@@ -220,4 +220,9 @@ sub main{
   return $self->command()->execute();
 }
 
+sub version{
+  my ($self) = @_;
+  return $App::CSE::VERSION || 'dev';
+}
+
 __PACKAGE__->meta->make_immutable();

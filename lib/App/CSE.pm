@@ -20,6 +20,52 @@ use Getopt::Long qw//;
 
 use Log::Log4perl qw/:easy/;
 
+=head1 NAME
+
+App::CSE - Code search engine. Implements the 'cse' program
+
+=head1 SYNOPSIS
+
+
+  cse
+
+See L<App::CSE::Command::Help> For a description the available commands.
+
+=head1 PROGRAMMATIC USAGE
+
+In addition of using this via the command line program 'cse', you can use this app
+in an object oriented way.
+
+For instance:
+
+  my $app = App::CSE->new( { command_name => 'index',
+                             options => { 'idx' => '/path/to/the/index' ,
+                                           'dir' => '/code/directory/to/index'
+                                        });
+
+  if( $app->execute() ){
+      .. and error occured ..
+  }else{
+      .. It is a success ..
+  }
+
+Retrieving search hits after a search:
+
+  my $app = App::CSE->new( { command_name => 'search',
+                             args => [ 'search_query' ],
+                             options => { 'idx' => '/path/to/the/index' ,
+                                           'dir' => '/code/directory/to/index'
+                                        });
+ my $hits = $app->command()->hits();
+ # This is a L<Lucy::Search::Hits>
+
+See L<App::CSE::Command::Help> for a list of available commands and options.
+
+=head1 LOGGING
+
+App::CSE uses L<Log::Log4perl>
+
+=cut
 
 has 'command_name' => ( is => 'ro', isa => 'Str', required => 1 , lazy_build => 1);
 has 'command' => ( is => 'ro', isa => 'App::CSE::Command', lazy_build => 1);

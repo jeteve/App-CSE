@@ -64,11 +64,11 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
 }
 
 {
-  ## Searhing for heli*. Will find stuff with heliport and helicopter
+  ## Searhing for heli*. Will find stuff with heliport, helicopter and HelloJava
   local @ARGV = (  '--idx='.$idx_dir, 'hel*', '--dir='.$content_dir.'');
   my $cse = App::CSE->new();
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
-  is( $cse->command()->hits()->total_hits() , 2 , "Ok got 2 hits");
+  is( $cse->command()->hits()->total_hits() , 3 , "Ok got 3 hits");
 }
 
 

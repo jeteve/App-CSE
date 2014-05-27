@@ -33,7 +33,13 @@ sub execute{
     return 1;
   }
 
-  $LOGGER->info("Index $index_dir is healthy.");
+  my $dirty_str = '';
+  my $dirty_hash = $self->cse()->dirty_files();
+  if( my $ndirty = scalar( keys %$dirty_hash ) ){
+    $dirty_str  = ' '.$ndirty.' dirty files - run cse update to clean them';
+  }
+
+  $LOGGER->info("Index $index_dir is healthy.".$dirty_str);
   my $schema = $lucy->get_schema();
   my @fields = sort @{ $schema->all_fields() };
   $LOGGER->info("Fields: ".join(', ', map{ $_.' ('._scrape_lucy_class($schema->fetch_type($_)).')'  } @fields));

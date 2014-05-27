@@ -68,8 +68,11 @@ sub execute{
   # String type
   my $sstring_type = Lucy::Plan::StringType->new( sortable => 1 );
 
+  # Plain string type
+  my $plain_string = Lucy::Plan::StringType->new();
 
   $schema->spec_field( name => 'path' , type => $ft_nohl );
+  $schema->spec_field( name => 'path.raw' , type => $plain_string );
   $schema->spec_field( name => 'dir'  , type => $sstring_type );
   $schema->spec_field( name => 'mtime' , type => $sstring_type );
   $schema->spec_field( name => 'mime' , type => $sstring_type );
@@ -146,6 +149,7 @@ sub execute{
     my $content = $file->content();
     $indexer->add_doc({
                        path => $file->file_path(),
+                       'path.raw' => $file->file_path(),
                        dir => $file->dir(),
                        mime => $file->mime_type(),
                        mtime => $file->mtime->iso8601(),

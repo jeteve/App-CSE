@@ -12,6 +12,7 @@ package App::CSE;
 use Moose;
 use Class::Load;
 use DateTime;
+use JSON;
 use String::CamelCase;
 
 use Path::Class::Dir;
@@ -51,6 +52,8 @@ See L<App::CSE::Command::Help> For a description the available commands.
 =item Directory filtering
 
 =item Paging
+
+=item Works with Perl 5.8.8 up to 5.20
 
 =back
 
@@ -120,6 +123,21 @@ has 'args' => ( is => 'ro' , isa => 'ArrayRef[Str]', lazy_build => 1);
 
 has 'index_dir' => ( is => 'ro' , isa => 'Path::Class::Dir', lazy_build => 1);
 has 'index_mtime' => ( is => 'ro' , isa => 'DateTime' , lazy_build => 1);
+has 'index_dirty_file' => ( is => 'ro' , isa => 'Path::Class::File', lazy_build => 1);
+has 'dirty_files' => ( is => 'ro', isa => 'HashRef[Str]', lazy_build => 1);
+
+sub _build_index_dirty_file{
+  my ($self) = @_;
+  return $self->index_dir()->file('cse_dirty.js');
+}
+
+sub _build_dirty_files{
+  my ($self) = @_;
+  unless( -r $self->index_dirty_file() ){
+    return {};
+  }
+  return JSON::decode_json(File::Slurp::read_file($self->index_dirty_file().'' , { binmode => ':raw' }));
+}
 
 sub _build_index_mtime{
   my ($self) = @_;
@@ -232,6 +250,12 @@ sub main{
   }
 
   return $self->command()->execute();
+}
+
+sub save_dirty_files{
+  my ($self) = @_;
+  File::Slurp::write_file($self->index_dirty_file().'' , { binmode => ':raw' }, JSON::encode_json($self->dirty_files));
+  return 1;
 }
 
 sub version{

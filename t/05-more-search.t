@@ -3,7 +3,11 @@ use Test::More;
 
 use Log::Log4perl qw/:easy/;
 
+
 Log::Log4perl->easy_init($TRACE);
+binmode STDOUT , ':utf8';
+binmode STDERR , ':utf8';
+
 
 use App::CSE;
 

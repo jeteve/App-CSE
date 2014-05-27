@@ -231,6 +231,8 @@ sub execute{
     if( my $stat = File::stat::stat( $hit->{path} ) ){
       if( $hit->{mtime} lt DateTime->from_epoch(epoch => $stat->mtime())->iso8601() ){
         $star = colored('*' , 'red bold');
+        # Mark the file as dirty.
+        $self->cse()->dirty_files()->{$hit->{'path.raw'}} = 1;
       }
     }
 
@@ -246,6 +248,8 @@ sub execute{
 
   my $stop_time = Time::HiRes::time();
 
+  # Save the dirty files memory.
+  $self->cse()->save_dirty_files();
 
   $LOGGER->info("Search took ".sprintf('%.03f', ( $stop_time - $start_time ))." secs");
 

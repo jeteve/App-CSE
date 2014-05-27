@@ -45,7 +45,6 @@ sub execute{
 
   my $NFILES = 0;
   foreach my $dirty_file ( @dirty_files ){
-    $LOGGER->info("Reindexing file $dirty_file");
     $indexer->delete_by_term( field => 'path.raw',
                               term => $dirty_file );
     my $mime_type = File::MimeInfo::Magic::mimetype($dirty_file.'') || 'application/octet-stream';
@@ -58,6 +57,8 @@ sub execute{
     my $file = $file_class->new({cse => $self->cse(),
                                  mime_type => $mime_type,
                                  file_path => $dirty_file.'' })->effective_object();
+
+    $LOGGER->info("Reindexing file $dirty_file as ".$file->mime_type());
     # And index it
     my $content = $file->content();
     $indexer->add_doc({

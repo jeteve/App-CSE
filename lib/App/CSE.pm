@@ -40,6 +40,20 @@ Using cpanm:
 
 See L<App::CSE::Command::Help> For a description the available commands.
 
+=head1 FEATURES
+
+=over
+
+=item Hit highlighting
+
+=item Dirty index indicator
+
+=item Directory filtering
+
+=item Paging
+
+=back
+
 =head1 PROGRAMMATIC USAGE
 
 In addition of using this via the command line program 'cse', you can use this app

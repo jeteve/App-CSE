@@ -128,6 +128,10 @@ Directory to index. Defaults to current directory.
 
 =back
 
+=head2 update
+
+Updates the files marked as dirty (after a search) in the index.
+
 =head1 COMMON OPTIONS
 
 =over

@@ -5,14 +5,18 @@ use base qw/Lucy::Highlight::Highlighter/;
 use strict;
 use warnings;
 use Carp;
+
+## See issue https://github.com/dagolden/class-insideout/issues/6
+## to know why we cannot use that for now.
 # use Class::InsideOut qw( private register );
 
+# Inside out attributes.
 my %cse_command;
 my %cse;
 
-=head2 encode
+=head2 new
 
-Overrides the Lucy encode method to avoid any HTMLI-zation.
+Adds the cse_command new argument.
 
 =cut
 
@@ -26,10 +30,22 @@ sub new{
   return $self;
 }
 
+=head2 encode
+
+Overrides the Lucy encode method to avoid any HTMLI-zation.
+
+=cut
+
 sub encode{
   my ($self, $text) = @_;
   return $text;
 }
+
+=head2 highlight
+
+Highlights the bit of text using either colors or pure text.
+
+=cut
 
 sub highlight{
   my ($self, $text) = @_;

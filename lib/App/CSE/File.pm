@@ -2,6 +2,7 @@ package App::CSE::File;
 
 use Moose;
 
+use App::CSE;
 use Class::Load;
 use Encode;
 use File::Basename;
@@ -9,7 +10,6 @@ use File::Slurp;
 use File::stat qw//;
 use DateTime;
 use String::CamelCase;
-use Term::ANSIColor;
 
 use Log::Log4perl;
 my $LOGGER = Log::Log4perl->get_logger();
@@ -109,7 +109,8 @@ sub class_for_mime{
   ( $file_class_name ) = ( $file_class_name =~ /^([\w:]+)$/ );
   my $file_class = eval{ Class::Load::load_class($file_class_name); };
   unless( $file_class ){
-    $LOGGER->debug(colored("No class '$file_class_name' for mimetype $mime_type ($file_name)",'red bold'));
+    # A bit dirty, but well..
+    $LOGGER->debug(App::CSE->instance()->colorizer->colored("No class '$file_class_name' for mimetype $mime_type ($file_name)",'red bold'));
     return undef;
   }
   return $file_class;

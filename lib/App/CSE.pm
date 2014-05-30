@@ -129,6 +129,17 @@ has 'index_mtime' => ( is => 'ro' , isa => 'DateTime' , lazy_build => 1);
 has 'index_dirty_file' => ( is => 'ro' , isa => 'Path::Class::File', lazy_build => 1);
 has 'dirty_files' => ( is => 'ro', isa => 'HashRef[Str]', lazy_build => 1);
 
+{# Singleton flavour
+  my $instance;
+  sub BUILD{
+    my ($self) = @_;
+    $instance = $self;
+  }
+  sub instance{
+    return $instance;
+  }
+}
+
 sub _build_colorizer{
   my ($self) = @_;
   return App::CSE::Colorizer->new( { cse => $self } );

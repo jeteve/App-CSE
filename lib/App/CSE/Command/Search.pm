@@ -17,7 +17,6 @@ use Lucy::Search::QueryParser;
 use Lucy::Search::SortSpec;
 use Lucy::Search::SortRule;
 use Path::Class::Dir;
-use Term::ANSIColor; # For colored
 use Time::HiRes;
 
 my $LOGGER = Log::Log4perl->get_logger();
@@ -61,7 +60,7 @@ sub _build_sort_spec{
               Lucy::Search::SortRule->new( field => 'path' ),
              );
   }else{
-    $LOGGER->error(colored("Unknown sort mode ".$self->sort_str().". Falling back to 'score'", 'red bold'));
+    $LOGGER->error($self->cse->colorizer->colored("Unknown sort mode ".$self->sort_str().". Falling back to 'score'", 'red bold'));
   }
 
   return Lucy::Search::SortSpec->new(rules => \@rules );
@@ -111,13 +110,13 @@ sub _build_sort_str{
   my ($self) = @_;
   my $sort_str =  $self->cse()->options()->{sort} || 'score';
   unless( $legit_sort{$sort_str} ){
-    $LOGGER->error(colored("Unknown sort mode ".$sort_str.". Falling back to 'score'", 'red bold'));
+    $LOGGER->error($self->cse->colorizer->colored("Unknown sort mode ".$sort_str.". Falling back to 'score'", 'red bold'));
     return 'score';
   }
 
   my $perl_version = $];
   if( $perl_version >= 5.016 && $sort_str ne 'score' ){
-    $LOGGER->warn(colored("A bug in Lucy doesn't allow this version of Perl($perl_version) to take sort mode (".$sort_str.") into account for now.", 'yellow bold'));
+    $LOGGER->warn($self->cse->colorizer->colored("A bug in Lucy doesn't allow this version of Perl($perl_version) to take sort mode (".$sort_str.") into account for now.", 'yellow bold'));
     return 'score'
   }
 
@@ -203,18 +202,21 @@ sub _build_query{
 sub execute{
   my ($self) = @_;
 
+  my $colorizer = $self->cse->colorizer();
+  my $colored = sub{ $colorizer->colored(@_); };
+
   unless( $self->query_str() ){
-    $LOGGER->warn(colored("Missing query. Do cse help" , 'red'));
+    $LOGGER->warn(&$colored("Missing query. Do cse help" , 'red'));
     return 1;
   }
 
   # Check the index.
   my $check = App::CSE::Command::Check->new({ cse => $self->cse() });
   if( $check->execute() ){
-    $LOGGER->info(colored("Rebuilding the index..", 'green bold'));
+    $LOGGER->info(&$colored("Rebuilding the index..", 'green bold'));
     my $index_cmd = App::CSE::Command::Index->new( { cse => $self->cse() });
     if( $index_cmd->execute() ){
-      $LOGGER->error(colored("Building index failed", 'red'));
+      $LOGGER->error(&$colored("Building index failed", 'red'));
       return 1;
     }
   }
@@ -222,7 +224,7 @@ sub execute{
   my $hits = $self->hits();
   my $highlighter = $self->highlighter();
 
-  $LOGGER->info(colored('Hits: '. $self->offset().' - '.( $self->offset() + $self->num() - 1).' of '.$hits->total_hits().' sorted by '.$self->sort_str(), 'green bold')."\n\n");
+  $LOGGER->info(&$colored('Hits: '. $self->offset().' - '.( $self->offset() + $self->num() - 1).' of '.$hits->total_hits().' sorted by '.$self->sort_str(), 'green bold')."\n\n");
 
   while ( my $hit = $hits->next ) {
 
@@ -231,7 +233,7 @@ sub execute{
     my $star = '';
     if( my $stat = File::stat::stat( $hit->{path} ) ){
       if( $hit->{mtime} lt DateTime->from_epoch(epoch => $stat->mtime())->iso8601() ){
-        $star = colored('*' , 'red bold');
+        $star = &$colored('*' , 'red bold');
         # Mark the file as dirty.
         $self->cse()->dirty_files()->{$hit->{'path.raw'}} = 1;
       }
@@ -239,7 +241,7 @@ sub execute{
 
     $LOGGER->trace("Score: ".$hit->get_score());
 
-    my $hit_str = colored($hit->{path}.'', 'magenta bold').' ('.$hit->{mime}.') ['.$hit->{mtime}.$star.']'.colored(':', 'cyan bold').q|
+    my $hit_str = &$colored($hit->{path}.'', 'magenta bold').' ('.$hit->{mime}.') ['.$hit->{mtime}.$star.']'.&$colored(':', 'cyan bold').q|
 |.( $excerpt || substr($hit->{content} || '' , 0 , 100 ) ).q|
 
 |;

@@ -16,7 +16,6 @@ use Path::Class::Dir;
 use Lucy::Plan::Schema;
 
 use String::CamelCase;
-use Term::ANSIColor;
 use Term::ProgressBar;
 use Time::HiRes;
 
@@ -174,7 +173,7 @@ sub execute{
 
   my $END_TIME = Time::HiRes::time();
 
-  $LOGGER->info(colored("Index is ".$self->cse()->index_dir()->stringify(), 'green bold'));
+  $LOGGER->info($self->cse->colorizer->colored("Index is ".$self->cse()->index_dir()->stringify(), 'green bold'));
   $LOGGER->info("$NUM_INDEXED files ($TOTAL_SIZE Bytes) indexed in ".sprintf('%.03f', ( $END_TIME - $START_TIME )).' seconds');
 
   return 0;

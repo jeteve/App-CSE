@@ -5,7 +5,6 @@ extends qw/App::CSE::Command/;
 
 use Lucy::Search::IndexSearcher;
 
-use Term::ANSIColor;
 
 use Log::Log4perl;
 my $LOGGER = Log::Log4perl->get_logger();
@@ -28,7 +27,7 @@ sub execute{
                  };
   unless( $lucy ){
     my $err = $@;
-    $LOGGER->error(colored("The index $index_dir is not a valid lucy index.", 'red bold'));
+    $LOGGER->error($self->cse->colorizer->colored("The index $index_dir is not a valid lucy index.", 'red bold'));
     $LOGGER->debug("Lucy error: $err");
     return 1;
   }

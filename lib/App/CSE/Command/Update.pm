@@ -8,7 +8,6 @@ use App::CSE::Command::Index;
 use App::CSE::File;
 
 use File::MimeInfo::Magic;
-use Term::ANSIColor; # For colored
 
 
 use Log::Log4perl;
@@ -17,14 +16,18 @@ my $LOGGER = Log::Log4perl->get_logger();
 sub execute{
   my ($self) = @_;
 
+  my $colorizer = $self->cse()->colorizer();
+
+  my $colored = sub{ $colorizer->colored(@_);};
+
   # Check the index.
   # Re-index if nothing is there.
   my $check = App::CSE::Command::Check->new({ cse => $self->cse() });
   if( $check->execute() ){
-    $LOGGER->info(colored("Rebuilding the index..", 'green bold'));
+    $LOGGER->info(&$colored("Rebuilding the index..", 'green bold'));
     my $index_cmd = App::CSE::Command::Index->new( { cse => $self->cse() });
     if( $index_cmd->execute() ){
-      $LOGGER->error(colored("Building index failed", 'red'));
+      $LOGGER->error(&$colored("Building index failed", 'red'));
       return 1;
     }
     # Nothing else to do.
@@ -34,7 +37,7 @@ sub execute{
   # Right time to reindex dirty files.
   my @dirty_files = sort keys %{$self->cse->dirty_files()};
   unless( @dirty_files ){
-    $LOGGER->info(colored("No dirty files", 'green bold'));
+    $LOGGER->info(&$colored("No dirty files", 'green bold'));
     return 0;
   }
 
@@ -77,7 +80,7 @@ sub execute{
   # Commit and save that.
   $indexer->commit();
   $self->cse()->save_dirty_files();
-  $LOGGER->info(colored('Re-indexed '.$NFILES.' files' ,'green bold'));
+  $LOGGER->info(&$colored('Re-indexed '.$NFILES.' files' ,'green bold'));
   return 0;
 }
 

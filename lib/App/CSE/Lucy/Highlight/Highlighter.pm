@@ -18,7 +18,7 @@ Overrides the Lucy encode method to avoid any HTMLI-zation.
 
 sub new{
   my ($class, %options) = @_;
-  my $cse_command = delete $options{'cse_command'} // confess("Missing cse_command");
+  my $cse_command = delete $options{'cse_command'} || confess("Missing cse_command");
   my $self = $class->SUPER::new(%options);
   register($self);
   $self->cse_command($cse_command);

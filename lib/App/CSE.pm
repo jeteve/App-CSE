@@ -12,6 +12,7 @@ package App::CSE;
 use Moose;
 use Class::Load;
 use DateTime;
+use IO::Interactive;
 use JSON;
 use String::CamelCase;
 
@@ -109,7 +110,7 @@ has 'command_name' => ( is => 'ro', isa => 'Str', required => 1 , lazy_build => 
 has 'command' => ( is => 'ro', isa => 'App::CSE::Command', lazy_build => 1);
 has 'max_size' => ( is => 'ro' , isa => 'Int' , lazy_build => 1);
 
-has 'interactive' => ( is => 'ro' , isa => 'Bool' , default => 0 );
+has 'interactive' => ( is => 'ro' , isa => 'Bool' , lazy_build => 1  );
 
 # GetOpt::Long options specs.
 has 'options_specs' => ( is => 'ro' , isa => 'ArrayRef[Str]', lazy_build => 1);
@@ -125,6 +126,11 @@ has 'index_dir' => ( is => 'ro' , isa => 'Path::Class::Dir', lazy_build => 1);
 has 'index_mtime' => ( is => 'ro' , isa => 'DateTime' , lazy_build => 1);
 has 'index_dirty_file' => ( is => 'ro' , isa => 'Path::Class::File', lazy_build => 1);
 has 'dirty_files' => ( is => 'ro', isa => 'HashRef[Str]', lazy_build => 1);
+
+sub _build_interactive{
+  my ($self) = @_;
+  return IO::Interactive::is_interactive();
+}
 
 sub _build_index_dirty_file{
   my ($self) = @_;

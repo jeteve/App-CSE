@@ -13,4 +13,4 @@ binmode STDOUT , ':utf8';
 binmode STDERR , ':utf8';
 
 use App::CSE;
-exit(App::CSE->new({ interactive => 1 })->main());
+exit(App::CSE->new()->main());

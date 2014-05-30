@@ -8,6 +8,7 @@ use Carp;
 use Class::InsideOut qw( public register id );
 
 public cse_command => my %cse_command;
+public cse         => my %cse;
 
 =head2 encode
 
@@ -15,14 +16,13 @@ Overrides the Lucy encode method to avoid any HTMLI-zation.
 
 =cut
 
-use Term::ANSIColor;
-
 sub new{
   my ($class, %options) = @_;
   my $cse_command = delete $options{'cse_command'} // confess("Missing cse_command");
   my $self = $class->SUPER::new(%options);
   register($self);
   $self->cse_command($cse_command);
+  $self->cse($cse_command->cse());
   return $self;
 }
 
@@ -33,7 +33,11 @@ sub encode{
 
 sub highlight{
   my ($self, $text) = @_;
-  return colored($text , 'red bold');
+  if( $self->cse()->interactive() ){
+    return $self->cse()->colorizer->colored($text , 'red bold');
+  }else{
+    return '[>'.$text.'<]';
+  }
 }
 
 1;

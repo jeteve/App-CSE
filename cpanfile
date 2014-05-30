@@ -1,4 +1,5 @@
 requires 'Carp';
+requires 'Class::InsideOut';
 requires 'Class::Load';
 requires 'DateTime';
 requires 'Encode';

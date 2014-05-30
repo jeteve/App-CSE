@@ -75,6 +75,7 @@ sub _build_highlighter{
                                                      query    => $self->highlight_query(),
                                                      field    => 'content',
                                                      excerpt_length => 100,
+                                                     cse_command => $self,
                                                     );
 }
 

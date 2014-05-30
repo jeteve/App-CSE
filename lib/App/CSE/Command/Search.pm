@@ -221,7 +221,10 @@ sub execute{
     }
   }
   my $start_time = Time::HiRes::time();
+
+  ## This will trigger a search. Look at _build_hits
   my $hits = $self->hits();
+
   my $highlighter = $self->highlighter();
 
   $LOGGER->info(&$colored('Hits: '. $self->offset().' - '.( $self->offset() + $self->num() - 1).' of '.$hits->total_hits().' sorted by '.$self->sort_str(), 'green bold')."\n\n");

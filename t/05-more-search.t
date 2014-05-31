@@ -19,6 +19,9 @@ use Path::Class::Dir;
 my $idx_dir = File::Temp->newdir( CLEANUP => 1 );
 my $content_dir = Path::Class::Dir->new('t/toindex');
 
+# We are trying to cover as many languages from http://langpop.corger.nl/
+# as possible.
+
 {
   ## Searching for some javascript.
   local @ARGV = (  '--idx='.$idx_dir, 'javascriptIsGreat', '--dir='.$content_dir.'');
@@ -126,5 +129,24 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   ok( $cse->command()->hits() , "Ok got hits");
   is( $cse->command()->hits()->total_hits() , 1, "Ok got one hit");
 }
+
+{
+  ## Searching for c_plus_plus (from the .cc and .cpp file).
+  local @ARGV = (  '--idx='.$idx_dir, 'c_plus_plus');
+  my $cse = App::CSE->new();
+  is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
+  ok( $cse->command()->hits() , "Ok got hits");
+  is( $cse->command()->hits()->total_hits() , 2, "Ok got two hits. One from the .cc and one from the .cpp");
+}
+
+{
+  ## Searching for head_h (from the .h file).
+  local @ARGV = (  '--idx='.$idx_dir, 'head_h');
+  my $cse = App::CSE->new();
+  is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
+  ok( $cse->command()->hits() , "Ok got hits");
+  is( $cse->command()->hits()->total_hits() , 1, "Ok got one hit");
+}
+
 ok(1);
 done_testing();

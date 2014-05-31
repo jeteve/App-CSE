@@ -117,5 +117,14 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   ok( $cse->command()->hits() , "Ok got hits");
   is( $cse->command()->hits()->total_hits() , 1, "Ok got one hit");
 }
+
+{
+  ## Searching for this_is_an_html_file (from the HTML file).
+  local @ARGV = (  '--idx='.$idx_dir, 'This_is_an_html_file');
+  my $cse = App::CSE->new();
+  is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
+  ok( $cse->command()->hits() , "Ok got hits");
+  is( $cse->command()->hits()->total_hits() , 1, "Ok got one hit");
+}
 ok(1);
 done_testing();

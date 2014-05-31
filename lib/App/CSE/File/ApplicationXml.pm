@@ -23,7 +23,6 @@ sub _build_content{
   # We need a string, not bytes.
   $dom->setEncoding('UTF-8');
   my $bytes = $dom->toString();
-  $LOGGER->debug("Stringified dom to $bytes");
   return Encode::decode($dom->actualEncoding(), $dom->toString());
 }
 

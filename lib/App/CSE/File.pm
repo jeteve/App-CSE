@@ -19,9 +19,10 @@ has 'cse' => ( is => 'ro' , isa => 'App::CSE' , required => 1 );
 has 'mime_type' => ( is => 'ro', isa => 'Str', required => 1);
 has 'file_path' => ( is => 'ro', isa => 'Str', required => 1);
 has 'dir' => ( is => 'ro' , isa => 'Str' , required => 1, lazy_build => 1);
-has 'encoding' => ( is => 'ro' , isa => 'Str', default => 'UTF-8');
 
+has 'encoding' => ( is => 'ro' , isa => 'Str', lazy_build => 1 );
 has 'content' => ( is => 'ro' , isa => 'Maybe[Str]', required => 1, lazy_build => 1 );
+has 'raw_content' => ( is => 'ro' , isa => 'Maybe[Str]', required => 1 , lazy_build => 1);
 
 has 'stat' => ( is => 'ro' , isa => 'File::stat' , lazy_build => 1 );
 has 'mtime' => ( is => 'ro' , isa => 'DateTime' , lazy_build => 1);
@@ -42,12 +43,25 @@ sub _build_mtime{
 }
 
 
-sub _build_content{
+sub _build_encoding{
+  my ($self) = @_;
+  ## This is the default. Override that in specific file types
+  return 'UTF-8';
+}
+
+sub _build_raw_content{
   my ($self) = @_;
   if( $self->stat()->size() > $self->cse()->max_size() ){
     return undef;
   }
-  my $raw_content =  File::Slurp::read_file($self->file_path(), binmode => ':raw');
+  return scalar( File::Slurp::read_file($self->file_path(), binmode => ':raw') );
+}
+
+sub _build_content{
+  my ($self) = @_;
+  my $raw_content = $self->raw_content();
+  unless( defined($raw_content) ){ return undef; }
+
   my $decoded = eval{ Encode::decode($self->encoding(), $raw_content, Encode::FB_CROAK ); };
   unless( $decoded ){
     $LOGGER->debug("File ".$self->file_path()." failed to be decoded as ".$self->encoding().": ".$@);

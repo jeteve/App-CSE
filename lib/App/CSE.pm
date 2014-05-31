@@ -20,6 +20,7 @@ use String::CamelCase;
 use Path::Class::Dir;
 use File::stat;
 use Getopt::Long qw//;
+use XML::LibXML;
 
 use Log::Log4perl qw/:easy/;
 
@@ -129,6 +130,9 @@ has 'index_mtime' => ( is => 'ro' , isa => 'DateTime' , lazy_build => 1);
 has 'index_dirty_file' => ( is => 'ro' , isa => 'Path::Class::File', lazy_build => 1);
 has 'dirty_files' => ( is => 'ro', isa => 'HashRef[Str]', lazy_build => 1);
 
+# File utilities
+has 'xml_parser' => ( is => 'ro' , isa => 'XML::LibXML', lazy_build => 1);
+
 {# Singleton flavour
   my $instance;
   sub BUILD{
@@ -138,6 +142,11 @@ has 'dirty_files' => ( is => 'ro', isa => 'HashRef[Str]', lazy_build => 1);
   sub instance{
     return $instance;
   }
+}
+
+sub _build_xml_parser{
+  my ($self) = @_;
+  return XML::LibXML->new();
 }
 
 sub _build_colorizer{

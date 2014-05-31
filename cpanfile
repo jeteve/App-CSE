@@ -20,6 +20,7 @@ requires 'Scalar::Util';
 requires 'String::CamelCase';
 requires 'Term::ProgressBar';
 requires 'Time::HiRes';
+requires 'XML::LibXML';
 
 test_requires 'Test::More';
 test_requires 'File::Temp';

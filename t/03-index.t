@@ -7,6 +7,9 @@ use App::CSE;
 use File::Temp;
 use Path::Class::Dir;
 
+use Log::Log4perl qw/:easy/;
+# Log::Log4perl->easy_init($DEBUG);
+
 {
   #local @ARGV = ( 'help' );
 

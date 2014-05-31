@@ -7,6 +7,9 @@ use App::CSE;
 use File::Temp;
 use Path::Class::Dir;
 
+use Log::Log4perl qw/:easy/;
+# Log::Log4perl->easy_init($ERROR);
+
 my $idx_dir = File::Temp->newdir( CLEANUP => 1 );
 my $content_dir = Path::Class::Dir->new('t/toindex');
 
@@ -67,11 +70,52 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   ## Searhing for bon*. Will find stuff with bonjour, bonnaventure and bonsoir
   local @ARGV = (  '--idx='.$idx_dir, 'bon*', '--dir='.$content_dir.'');
   my $cse = App::CSE->new();
+  # diag($cse->command->query()->to_string());
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
   is( $cse->command()->hits()->total_hits() , 3 , "Ok got 3 hits");
 }
 
+## Check various queries
 
+{
+  # Plain simple term
+  local @ARGV = (  '--idx='.$idx_dir, 'hello', '--dir='.$content_dir.'');
+  my $cse = App::CSE->new();
+  use Data::Dumper;
+  is($cse->command->query()->to_string() , '(content:hello OR path:hello)');
+}
+
+{
+  # Plain field term
+  local @ARGV = (  '--idx='.$idx_dir, 'content:hello', '--dir='.$content_dir.'');
+  my $cse = App::CSE->new();
+  use Data::Dumper;
+  is($cse->command->query()->to_string(), 'content:hello');
+}
+
+{
+  # Single prefix query
+  local @ARGV = (  '--idx='.$idx_dir, 'hell*', '--dir='.$content_dir.'');
+  my $cse = App::CSE->new();
+  use Data::Dumper;
+  is($cse->command->query()->to_string(), 'content:hell*');
+}
+
+{
+  # Qualified prefix query
+  local @ARGV = (  '--idx='.$idx_dir, 'path:hell*', '--dir='.$content_dir.'');
+  my $cse = App::CSE->new();
+  use Data::Dumper;
+  is($cse->command->query()->to_string(), 'path:hell*');
+}
+
+{
+  # Qualified composed queries
+  local @ARGV = (  '--idx='.$idx_dir, 'path:hell* AND NOT content:helo*', '--dir='.$content_dir.'');
+  my $cse = App::CSE->new();
+  use Data::Dumper;
+  is($cse->command->query()->to_string(), '(path:hell* AND -content:helo*)');
+}
 
 ok(1);
 done_testing();

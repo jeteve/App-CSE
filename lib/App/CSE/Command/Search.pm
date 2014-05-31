@@ -11,9 +11,10 @@ use DateTime;
 use File::Find;
 use File::MimeInfo::Magic;
 use Log::Log4perl;
+use Lucy::Analysis::RegexTokenizer;
 use Lucy::Search::Hits;
 use Lucy::Search::IndexSearcher;
-use Lucy::Search::QueryParser;
+use App::CSE::Lucy::Search::QueryParser;
 use Lucy::Search::SortSpec;
 use Lucy::Search::SortRule;
 use Path::Class::Dir;
@@ -69,6 +70,7 @@ sub _build_sort_spec{
 
 sub _build_highlighter{
   my ($self) = @_;
+  $LOGGER->debug("Using highlight_query = ".$self->highlight_query->to_string());
   return App::CSE::Lucy::Highlight::Highlighter->new(
                                                      searcher => $self->searcher(),
                                                      query    => $self->highlight_query(),
@@ -184,16 +186,29 @@ sub _build_filtered_query{
 sub _build_query{
   my ($self) = @_;
 
-  if( $self->query_str() =~ /\*$/ ){
-    return App::CSE::Lucy::Search::QueryPrefix->new(
-                                                    field        => 'content',
-                                                    query_string => $self->query_str(),
-                                                   );
+  # if( $self->query_str() =~ /\*$/ ){
+  #   return App::CSE::Lucy::Search::QueryPrefix->new(
+  #                                                   field        => 'content',
+  #                                                   query_string => $self->query_str(),
+  #                                                  );
+  # }
+
+  my $analyzer;
+  my $fields = [ 'content' , 'path' ];
+
+  if( $self->query_str() =~ /\*/ ){
+    # Let the query parser keep the *'s
+    $analyzer = Lucy::Analysis::RegexTokenizer->new( pattern => '\S+' );
+    unless( $self->query_str() =~ /\:/ ){
+      # No colon. Search only in content
+      $fields = [ 'content' ];
+    }
   }
 
-  my $qp = Lucy::Search::QueryParser->new( schema => $self->searcher->get_schema,
-                                           default_boolop => 'AND',
-                                           fields => [ 'content' , 'path' ] );
+  my $qp = App::CSE::Lucy::Search::QueryParser->new( schema => $self->searcher->get_schema,
+                                                     default_boolop => 'AND',
+                                                     $analyzer ?  ( analyzer => $analyzer ) : (),
+                                                     fields => $fields );
   $qp->set_heed_colons(1);
 
   return $qp->parse($self->query_str());

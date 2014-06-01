@@ -6,7 +6,7 @@ requires 'Encode';
 requires 'File::Find';
 requires 'File::MimeInfo::Magic';
 requires 'File::Slurp';
-requires 'File::Stat';
+requires 'File::stat';
 requires 'Filesys::DiskUsage';
 requires 'Getopt::Long';
 requires 'IO::Interactive';

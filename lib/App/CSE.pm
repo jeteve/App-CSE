@@ -48,7 +48,11 @@ See L<App::CSE::Command::Help> For a description the available commands.
 
 =over
 
-=item Hit highlighting
+=item Hits highlighting
+
+=item Prefix* queries
+
+=item Complex queries syntax (Lucy)
 
 =item Dirty index indicator
 

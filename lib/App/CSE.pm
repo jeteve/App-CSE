@@ -54,7 +54,9 @@ See L<App::CSE::Command::Help> For a description the available commands.
 
 =item Complex queries syntax (Lucy)
 
-=item Dirty index indicator
+=item Dirty files indicator
+
+=item Declaration queries (Perl subs and packages)
 
 =item Directory filtering
 

@@ -5,6 +5,9 @@ extends qw/App::CSE::Command/;
 
 use Lucy::Search::IndexSearcher;
 
+# To check for shared-mime-info DB.
+use File::BaseDir qw//;
+
 
 use Log::Log4perl;
 my $LOGGER = Log::Log4perl->get_logger();
@@ -43,6 +46,19 @@ sub execute{
   my @fields = sort @{ $schema->all_fields() };
   $LOGGER->info("Fields: ".join(', ', map{ $_.' ('._scrape_lucy_class($schema->fetch_type($_)).')'  } @fields));
   $LOGGER->info($lucy->get_reader()->doc_count().' files indexed on '.$self->cse->index_mtime()->iso8601());
+
+  unless( File::BaseDir::data_files('mime/globs') ){
+      $LOGGER->warn($self->cse->colorizer->colored(q|No mime type info database (mime-info) on the machine.
+
+All the files will be considered to be application/octet-stream at index time, making the search useless.
+
+The shared-mime-info package is available from http://freedesktop.org/ or from your OS package manager|, 'yellow bold'));
+      return 1;
+  }
+
+
+
+
   return 0;
 }
 

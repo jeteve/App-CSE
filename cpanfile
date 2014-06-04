@@ -3,6 +3,7 @@ requires 'Class::InsideOut';
 requires 'Class::Load';
 requires 'DateTime';
 requires 'Encode';
+requires 'File::BaseDir';
 requires 'File::Find';
 requires 'File::MimeInfo::Magic';
 requires 'File::Slurp';

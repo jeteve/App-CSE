@@ -91,7 +91,7 @@ sub highlight_query{
   my ($self) = @_;
   my $query = $self->query();
   if( $query->isa('App::CSE::Lucy::Search::QueryPrefix') ){
-    return $query->highlight_query();
+    return $query->highlight_query('content'); # Highlight in content
   }
   return $query;
 }

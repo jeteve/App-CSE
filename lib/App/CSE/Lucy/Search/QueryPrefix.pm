@@ -28,13 +28,15 @@ use Scalar::Util qw( blessed );
 # Inside-out member vars and hand-rolled accessors.
 my %query_string;
 my %field;
-my %highlight_query;
+my %highlight_terms;
 my %keep_case;
 
 sub get_query_string { my $self = shift; return $query_string{$$self} }
 sub get_field        { my $self = shift; return $field{$$self} }
-sub highlight_query  { my $self = shift; return $highlight_query{$$self} }
+sub highlight_terms  { my $self = shift; return $highlight_terms{$$self} }
 sub keep_case        { my $self = shift; return $keep_case{$$self} }
+
+
 
 sub new {
     my ( $class, %args ) = @_;
@@ -54,25 +56,35 @@ sub new {
 
     $query_string{$$self} = $query_string;
     $field{$$self}        = $field;
-    $highlight_query{$$self} = Lucy::Search::ORQuery->new();
+    $highlight_terms{$$self} = [];
     $keep_case{$$self} = $keep_case;
 
     return $self;
   }
 
+sub highlight_query{
+  my ($self, $field) = @_;
+  my $query = Lucy::Search::ORQuery->new();
+  foreach my $term ( @{$self->highlight_terms()} ){
+    $query->add_child(Lucy::Search::TermQuery->new(
+                                                   field => $field || $self->get_field(),
+                                                   term  => $term,
+                                                  ));
+  }
+  return $query;
+}
+
+
 sub add_matching_term{
   my ($self, $term ) = @_;
-  $self->highlight_query()->add_child(Lucy::Search::TermQuery->new(
-                                                                   field => $self->get_field(),
-                                                                   term  => $term,
-                                                                  ));
+  push @{$self->highlight_terms()}, $term;
 }
 
 sub DESTROY {
     my $self = shift;
     delete $query_string{$$self};
     delete $field{$$self};
-    delete $highlight_query{$$self};
+    delete $highlight_terms{$$self};
     $self->SUPER::DESTROY;
   }
 

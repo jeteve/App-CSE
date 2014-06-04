@@ -8,7 +8,6 @@ requires 'File::Find';
 requires 'File::MimeInfo::Magic';
 requires 'File::Slurp';
 requires 'File::stat';
-requires 'Filesys::DiskUsage';
 requires 'Getopt::Long';
 requires 'IO::Interactive';
 requires 'JSON';

@@ -10,7 +10,6 @@ use File::Find;
 use File::Path;
 use File::stat;
 use File::MimeInfo::Magic;
-use Filesys::DiskUsage;
 
 use Path::Class::Dir;
 use Lucy::Plan::Schema;
@@ -89,8 +88,40 @@ sub execute{
 
   my $dir_index = $self->dir_index();
 
+  ## Wrapper to build File::find wanter subs
+  my $wanted_wrapper = sub{
+    my ($wrapped) = @_;
+
+    return sub{
+      my $file_name = $File::Find::name;
+      unless( -r $file_name ){
+        $LOGGER->trace("Cannot read $file_name. Skipping");
+        return;
+      }
+
+      my $stat = File::stat::stat($file_name.'');
+      if( $file_name =~ /\/\.[^\/]+$/ ){
+        $LOGGER->trace("File $file_name is hidden. Skipping");
+        $File::Find::prune = 1;
+        return;
+      }
+      &$wrapped($file_name, $stat);
+    };
+  };
+
+
+
   $LOGGER->info("Estimating size. Please wait");
-  my $ESTIMATED_SIZE = Filesys::DiskUsage::du({ recursive => 1 }, $dir_index.'');
+  my $ESTIMATED_SIZE = 0;
+  File::Find::find({ wanted => &$wanted_wrapper(sub{
+                                                  my ($file_name, $stat) = @_;
+                                                  unless( -d $file_name ){
+                                                    $ESTIMATED_SIZE += $stat->size();
+                                                  }
+                                                }),
+                     no_chdir => 1,
+                     follow => 0,
+                   }, $dir_index );
 
   my $PROGRESS_BAR =  Term::ProgressBar->new({name  => 'Indexing',
                                               count => $ESTIMATED_SIZE,
@@ -104,25 +135,13 @@ sub execute{
   my $TOTAL_SIZE = 0;
 
   my $wanted = sub{
-    my $file_name = $File::Find::name;
+    my ($file_name, $stat) = @_;
 
-    unless( -r $file_name ){
-      $LOGGER->warn("Cannot read $file_name. Skipping");
-      return;
-    }
 
-    my $stat = File::stat::stat($file_name.'');
     unless( -d $file_name.'' ){
       $SIZE_LOOKEDAT += $stat->size();
       $PROGRESS_BAR->update($SIZE_LOOKEDAT);
     }
-
-    if( $file_name =~ /\/\.[^\/]+$/ ){
-      $LOGGER->trace("File $file_name is hidden. Skipping");
-      $File::Find::prune = 1;
-      return;
-    }
-
 
     my $mime_type = File::MimeInfo::Magic::mimetype($file_name.'') || 'application/octet-stream';
 
@@ -144,7 +163,6 @@ sub execute{
 
     $LOGGER->debug("Indexing ".$file->file_path().' as '.$file->mime_type());
 
-
     my $content = $file->content();
     $indexer->add_doc({
                        path => $file->file_path(),
@@ -156,10 +174,9 @@ sub execute{
                       });
     $NUM_INDEXED++;
     $TOTAL_SIZE+= $file->stat->size();
-
   };
 
-  File::Find::find({ wanted => $wanted,
+  File::Find::find({ wanted => &$wanted_wrapper($wanted),
                      no_chdir => 1,
                      follow => 0,
                    }, $dir_index );

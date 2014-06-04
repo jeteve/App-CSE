@@ -16,6 +16,13 @@ use Carp::Always;
 use File::Temp;
 use Path::Class::Dir;
 
+use File::BaseDir qw//;
+unless( File::BaseDir::data_files('mime/globs') ){
+    plan skip_all => 'No mime-info database on the machine. The shared-mime-info package is available from http://freedesktop.org/';
+}
+
+
+
 my $idx_dir = File::Temp->newdir( CLEANUP => 1 );
 my $content_dir = Path::Class::Dir->new('t/toindex');
 

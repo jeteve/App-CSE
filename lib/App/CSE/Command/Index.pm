@@ -60,21 +60,21 @@ sub execute{
   my $ft_anal = Lucy::Analysis::PolyAnalyzer->new(analyzers => [ $case_folder, $tokenizer ]);
 
   # Full text types.
-  my $ft_nohl = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, sortable => 1);
-  my $ft_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, highlightable => 1 );
+  my $path_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, sortable => 1);
+  my $body_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, highlightable => 1 );
 
   # String type
-  my $sstring_type = Lucy::Plan::StringType->new( sortable => 1 );
+  my $plain_sortable_string = Lucy::Plan::StringType->new( sortable => 1 );
 
   # Plain string type
   my $plain_string = Lucy::Plan::StringType->new();
 
-  $schema->spec_field( name => 'path' , type => $ft_nohl );
+  $schema->spec_field( name => 'path' , type => $path_type );
   $schema->spec_field( name => 'path.raw' , type => $plain_string );
-  $schema->spec_field( name => 'dir'  , type => $sstring_type );
-  $schema->spec_field( name => 'mtime' , type => $sstring_type );
-  $schema->spec_field( name => 'mime' , type => $sstring_type );
-  $schema->spec_field( name => 'content' , type => $ft_type );
+  $schema->spec_field( name => 'dir'  , type => $plain_sortable_string );
+  $schema->spec_field( name => 'mtime' , type => $plain_sortable_string);
+  $schema->spec_field( name => 'mime' , type => $plain_sortable_string );
+  $schema->spec_field( name => 'content' , type => $body_type );
 
 
   ## Ok Schema has been built

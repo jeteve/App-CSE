@@ -243,7 +243,7 @@ sub _build_options{
 
   my $p = Getopt::Long::Parser->new;
   ## Avoid capturing unknown options, like -hello
-  $p->configure( 'pass_through' , 'prefix=--' );
+  $p->configure( 'pass_through' );
   # Beware that accessing options_specs will consume the command as the first ARGV
   $p->getoptions(\%options , 'idx=s', 'dir=s', 'max-size=i', 'verbose+', @{$self->options_specs()} );
   return \%options;

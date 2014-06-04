@@ -60,8 +60,8 @@ sub execute{
   my $ft_anal = Lucy::Analysis::PolyAnalyzer->new(analyzers => [ $case_folder, $tokenizer ]);
 
   # Full text types.
-  my $path_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, sortable => 1);
-  my $body_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, highlightable => 1 );
+  my $path_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, sortable => 1, boost => 2.0);
+  my $body_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, highlightable => 1 , boost => 1.0);
 
   # String type
   my $plain_sortable_string = Lucy::Plan::StringType->new( sortable => 1 );

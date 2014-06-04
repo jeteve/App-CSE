@@ -66,8 +66,8 @@ Examples:
    ## Hello without world
    cse hello AND NOT world
 
-   ## Hello witout world alternative:
-   cse -- hello -world
+   ## Same thing, but more 'Lucy-ish':
+   cse hello -world
 
    ## Searching for the word 'search'
    cse search search

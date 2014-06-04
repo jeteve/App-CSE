@@ -70,7 +70,10 @@ sub _build_sort_spec{
 
 sub _build_highlighter{
   my ($self) = @_;
-  $LOGGER->debug("Using highlight_query = ".$self->highlight_query->to_string());
+
+  ## Note that this only builds a content highlighter.
+
+  $LOGGER->debug("Using highlight_query = ".$self->highlight_query('content')->to_string());
   return App::CSE::Lucy::Highlight::Highlighter->new(
                                                      searcher => $self->searcher(),
                                                      query    => $self->highlight_query(),
@@ -82,16 +85,20 @@ sub _build_highlighter{
 
 =head2 highlight_query
 
-The query used to highlight the content. Will be the original
+Returns the query used to highlight the given field. Will be the original
 query or the highlight query of the query prefix.
+
+Usage:
+
+  my $hl_query = $this->highlight_query('content');
 
 =cut
 
 sub highlight_query{
-  my ($self) = @_;
+  my ($self, $field) = @_;
   my $query = $self->query();
   if( $query->isa('App::CSE::Lucy::Search::QueryPrefix') ){
-    return $query->highlight_query('content'); # Highlight in content
+    return $query->highlight_query($field || 'content');
   }
   return $query;
 }

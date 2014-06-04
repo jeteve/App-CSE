@@ -58,10 +58,16 @@ sub execute{
 
   # Full text analyzer.
   my $ft_anal = Lucy::Analysis::PolyAnalyzer->new(analyzers => [ $case_folder, $tokenizer ]);
+  my $decl_anal = Lucy::Analysis::PolyAnalyzer
+    ->new(
+          analyzers => [ $case_folder, Lucy::Analysis::RegexTokenizer->new( pattern => '\S+' ) ]
+         );
 
   # Full text types.
   my $path_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, sortable => 1, boost => 2.0);
   my $body_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, highlightable => 1 , boost => 1.0);
+  my $declare_type = Lucy::Plan::FullTextType->new( analyzer => $decl_anal, highlightable => 1 , boost => 4.0 );
+
 
   # String type
   my $plain_sortable_string = Lucy::Plan::StringType->new( sortable => 1 );
@@ -69,12 +75,14 @@ sub execute{
   # Plain string type
   my $plain_string = Lucy::Plan::StringType->new();
 
-  $schema->spec_field( name => 'path' , type => $path_type );
-  $schema->spec_field( name => 'path.raw' , type => $plain_string );
+
+  $schema->spec_field( name => 'content' , type => $body_type );
+  $schema->spec_field( name => 'decl' , type => $declare_type );
   $schema->spec_field( name => 'dir'  , type => $plain_sortable_string );
   $schema->spec_field( name => 'mtime' , type => $plain_sortable_string);
   $schema->spec_field( name => 'mime' , type => $plain_sortable_string );
-  $schema->spec_field( name => 'content' , type => $body_type );
+  $schema->spec_field( name => 'path' , type => $path_type );
+  $schema->spec_field( name => 'path.raw' , type => $plain_string );
 
 
   ## Ok Schema has been built
@@ -167,6 +175,7 @@ sub execute{
     $indexer->add_doc({
                        path => $file->file_path(),
                        'path.raw' => $file->file_path(),
+                       decl => join(' ', @{$file->decl()}),
                        dir => $file->dir(),
                        mime => $file->mime_type(),
                        mtime => $file->mtime->iso8601(),

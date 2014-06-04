@@ -16,6 +16,7 @@ requires 'Lucy';
 requires 'Moose';
 requires 'Path::Class::Dir';
 requires 'Pod::Text';
+requires 'PPI';
 requires 'Scalar::Util';
 requires 'String::CamelCase';
 requires 'Term::ProgressBar';

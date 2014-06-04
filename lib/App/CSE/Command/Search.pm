@@ -159,7 +159,7 @@ sub _build_query_str{
   my $cse = $self->cse();
 
   my @str_bits = ();
-  while($cse->args()->[0] && ! -d $cse->args()->[0] ){
+  while($cse->args()->[0] && ! -e $cse->args()->[0] ){
       push @str_bits, ( shift @{$cse->args()} );
   }
   return  join(' ', @str_bits);
@@ -178,7 +178,7 @@ sub _build_filtered_query{
     # Filter the query with a filter on this dir as a prefix.
     my $fq = Lucy::Search::ANDQuery->new();
     $fq->add_child($self->query());
-    $fq->add_child(App::CSE::Lucy::Search::QueryPrefix->new( field => 'dir',
+    $fq->add_child(App::CSE::Lucy::Search::QueryPrefix->new( field => 'path.raw',
                                                              query_string => $dir_str.'*',
                                                              keep_case => 1
                                                            )
@@ -201,7 +201,7 @@ sub _build_query{
   # }
 
   my $analyzer;
-  my $fields = [ 'content' , 'path' ];
+  my $fields = [ 'content' , 'decl', 'path' ];
 
   if( $self->query_str() =~ /\*/ ){
     # Let the query parser keep the *'s
@@ -214,8 +214,9 @@ sub _build_query{
 
   my $qp = App::CSE::Lucy::Search::QueryParser->new( schema => $self->searcher->get_schema,
                                                      default_boolop => 'AND',
+                                                     fields => $fields,
                                                      $analyzer ?  ( analyzer => $analyzer ) : (),
-                                                     fields => $fields );
+                                                   );
   $qp->set_heed_colons(1);
 
   return $qp->parse($self->query_str());
@@ -266,10 +267,12 @@ sub execute{
 
     $LOGGER->trace("Score: ".$hit->get_score());
 
-    my $hit_str = &$colored($hit->{path}.'', 'magenta bold').' ('.$hit->{mime}.') ['.$hit->{mtime}.$star.']'.&$colored(':', 'cyan bold').q|
+    my $hit_str = &$colored($hit->{path}.'', 'magenta bold').' ('.$hit->{mime}.') ['.$hit->{mtime}.$star.']'.&$colored(':', 'cyan bold');
+    $hit_str .= q|
 |.( $excerpt || substr($hit->{content} || '' , 0 , 100 ) ).q|
 
 |;
+
 
     $LOGGER->info($hit_str);
   }

@@ -38,7 +38,7 @@ App::CSE::Command::Help - cse's help
 
 =head1 SYNOPSIS
 
-  cse <command> [ .. options .. ] [ command arguments ]
+  cse <command> [ .. options .. ] [ -- ] [ command arguments ]
 
   # Search for 'Something'
   cse Something
@@ -62,6 +62,12 @@ Examples:
 
    ## Searching for the word 'Something'
    cse Something
+
+   ## Hello without world
+   cse hello AND NOT world
+
+   ## Hello witout world alternative:
+   cse -- hello -world
 
    ## Searching for the word 'search'
    cse search search

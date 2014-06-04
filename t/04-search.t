@@ -117,5 +117,21 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   is($cse->command->query()->to_string(), '(path:hell* AND -content:helo*)');
 }
 
+{
+  # Qualified composed queries, multi args
+  local @ARGV = (  '--idx='.$idx_dir, 'path:hell*', 'AND', 'NOT' , 'content:helo*', '--dir='.$content_dir.'');
+  my $cse = App::CSE->new();
+  use Data::Dumper;
+  is($cse->command->query()->to_string(), '(path:hell* AND -content:helo*)');
+}
+
+{
+  # Same in another way
+  local @ARGV = (  '--idx='.$idx_dir, 'path:hell*', '-content:helo*', '--dir='.$content_dir.'');
+  my $cse = App::CSE->new();
+  use Data::Dumper;
+  is($cse->command->query()->to_string(), '(path:hell* AND -content:helo*)');
+}
+
 ok(1);
 done_testing();

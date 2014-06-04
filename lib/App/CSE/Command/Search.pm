@@ -155,7 +155,14 @@ sub _build_hits{
 
 sub _build_query_str{
   my ($self) = @_;
-  return  shift @{$self->cse->args()} || '';
+
+  my $cse = $self->cse();
+
+  my @str_bits = ();
+  while($cse->args()->[0] && ! -d $cse->args()->[0] ){
+      push @str_bits, ( shift @{$cse->args()} );
+  }
+  return  join(' ', @str_bits);
 }
 
 sub _build_dir_str{

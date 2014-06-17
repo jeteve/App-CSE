@@ -10,8 +10,9 @@ sub effective_object{
   }  elsif( $self->file_path() =~ /\.ini$/ ){
     return $self->requalify('application/x-wine-extension-ini');
   }  elsif( $self->file_path() =~ /\.rbw$/ ){
-    return $self->requalify('application/x-ruby');
+      return $self->requalify('application/x-ruby');
   } elsif( $self->file_path() =~ /\.tt$/ &&
+           $self->content() &&
            $self->content() =~ /\[%.+%\]/ ){
     return $self->requalify('application/x-templatetoolkit');
   }

@@ -136,6 +136,9 @@ has 'index_mtime' => ( is => 'ro' , isa => 'DateTime' , lazy_build => 1);
 has 'index_dirty_file' => ( is => 'ro' , isa => 'Path::Class::File', lazy_build => 1);
 has 'dirty_files' => ( is => 'ro', isa => 'HashRef[Str]', lazy_build => 1);
 
+has 'index_meta_file' => ( is => 'ro' , isa => 'Path::Class::File' , lazy_build => 1);
+has 'index_meta' => ( is => 'ro', isa => 'HashRef[Str]', lazy_build => 1);
+
 # File utilities
 has 'xml_parser' => ( is => 'ro' , isa => 'XML::LibXML', lazy_build => 1);
 
@@ -165,9 +168,22 @@ sub _build_interactive{
   return IO::Interactive::is_interactive();
 }
 
+sub _build_index_meta_file{
+  my ($self) = @_;
+  return $self->index_dir()->file('cse_meta.js');
+}
+
 sub _build_index_dirty_file{
   my ($self) = @_;
   return $self->index_dir()->file('cse_dirty.js');
+}
+
+sub _build_index_meta{
+  my ($self) = @_;
+  unless( -r $self->index_meta_file() ){
+    return { version => '-unknown-' };
+  }
+  return JSON::decode_json(File::Slurp::read_file($self->index_meta_file().'' , { binmode => ':raw' }));
 }
 
 sub _build_dirty_files{
@@ -291,6 +307,12 @@ sub main{
   }
 
   return $self->command()->execute();
+}
+
+sub save_index_meta{
+  my ($self) = @_;
+  File::Slurp::write_file($self->index_meta_file().'' , { binmode => ':raw' }, JSON::encode_json($self->index_meta));
+  return 1;
 }
 
 sub save_dirty_files{

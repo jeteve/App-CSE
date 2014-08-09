@@ -197,6 +197,12 @@ sub execute{
   rmtree $self->cse->index_dir()->stringify();
   rename $index_dir , $self->cse->index_dir()->stringify();
 
+  $self->cse->index_meta->{index_time} = DateTime->now()->iso8601();
+  # Also inject the right version
+  $self->cse->index_meta->{version} = $self->cse->version();;
+
+  $self->cse->save_index_meta();
+
   my $END_TIME = Time::HiRes::time();
 
   $LOGGER->info($self->cse->colorizer->colored("Index is ".$self->cse()->index_dir()->stringify(), 'green bold'));

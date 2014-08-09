@@ -149,6 +149,15 @@ sub _build_hits{
 
   $LOGGER->info("Searching for '".$self->filtered_query()->to_string()."'");
 
+
+  {
+    my $this_version = $self->cse()->version();
+    my $index_version = $self->cse->index_meta->{version};
+    unless( $this_version eq $index_version ){
+      $LOGGER->warn($self->cse()->colorizer->colored("Index version is too old ($index_version) for this program ($this_version). Please consider re-indexing", 'yellow bold'));
+    }
+  }
+
   my $perl_version = $];
 
   my $hits = $self->searcher->hits( query => $self->filtered_query(),

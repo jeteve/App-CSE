@@ -39,6 +39,16 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
 }
 
 {
+  ## Searching for 'isgreat' in javascript
+  local @ARGV = (  '--idx='.$idx_dir, 'isgreat', '--dir='.$content_dir.'');
+  my $cse = App::CSE->new();
+  is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
+  ok( $cse->command()->hits() , "Ok got hits");
+  is( $cse->command()->hits()->total_hits() , 1 , "Ok got one hit");
+}
+
+
+{
   ## Searching for some ruby
   local @ARGV = (  '--idx='.$idx_dir, 'ruby');
   my $cse = App::CSE->new();

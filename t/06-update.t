@@ -22,7 +22,7 @@ my $idx_dir = File::Temp->newdir( CLEANUP => 1 );
 my $c_dir = File::Temp->newdir( CLEANUP => 1 );
 my $content_dir = Path::Class::Dir->new( $c_dir );
 
-my $bonjour_file = $content_dir->file('bonjour.txt');
+my $bonjour_file = $content_dir->file('bonjour_file.txt');
 File::Slurp::write_file($bonjour_file.'', 'bonjour' );
 
 {

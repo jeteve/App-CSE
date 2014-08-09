@@ -54,7 +54,7 @@ sub execute{
 
 
   my $case_folder = Lucy::Analysis::CaseFolder->new();
-  my $tokenizer = Lucy::Analysis::StandardTokenizer->new();
+  my $tokenizer = Lucy::Analysis::RegexTokenizer->new( pattern => '\w+' ); # ;Lucy::Analysis::StandardTokenizer->new();
 
   # Full text analyzer.
   my $ft_anal = Lucy::Analysis::PolyAnalyzer->new(analyzers => [ $case_folder, $tokenizer ]);

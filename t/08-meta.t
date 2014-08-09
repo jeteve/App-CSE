@@ -40,14 +40,14 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   ok( $cse->command()->hits() , "Ok got hits");
   is( $cse->command()->hits()->total_hits() , 1 , "Ok got one hit");
 
-  is( $cse->index_meta->{version} , 'dev' , "Ok good version in index meta");
+  is( $cse->index_meta->{version} , $cse->version() , "Ok good version in index meta");
 }
 
 {
   ## Build the object, but not the index again.
   local @ARGV = (  '--idx='.$idx_dir, 'javascriptIsGreat', '--dir='.$content_dir.'');
   my $cse = App::CSE->new();
-  is( $cse->index_meta->{version} , 'dev' , "Ok good version in index meta");
+  is( $cse->index_meta->{version} , $cse->version() , "Ok good version in index meta");
   ok( $cse->index_meta->{index_time} , "Ok got an index time");
 }
 

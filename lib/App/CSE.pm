@@ -334,7 +334,10 @@ sub version{
 # for indexing.
 sub is_file_valid{
   my ($self, $file_name , $opts ) = @_;
-  $opts //= {};
+
+  unless( defined( $opts ) ){
+    $opts = {};
+  }
 
   unless( -r $file_name ){
     $LOGGER->trace("Cannot read $file_name. Skipping");

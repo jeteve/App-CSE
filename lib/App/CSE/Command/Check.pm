@@ -56,7 +56,16 @@ The shared-mime-info package is available from http://freedesktop.org/ or from y
       return 1;
   }
 
-
+  # Check some watcher.
+  if( my $watcher_pid = $self->cse->index_meta()->{'watcher.pid'} ){
+    $LOGGER->info("Dir watcher PID=".$watcher_pid);
+    ( $watcher_pid ) = ( $watcher_pid =~ /(\d+)/ );
+    if( kill(0 , $watcher_pid ) ){
+      $LOGGER->info("Watcher is Running");
+    }else{
+      $LOGGER->warn("Looks like watcher PID=$watcher_pid is defunct. Try cse unwatch to clean it up");
+    }
+  }
 
 
   return 0;

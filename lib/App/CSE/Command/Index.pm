@@ -2,6 +2,7 @@ package App::CSE::Command::Index;
 
 use Moose;
 extends qw/App::CSE::Command/;
+with qw/App::CSE::Role::DirIndex/;
 
 use App::CSE::File;
 
@@ -28,20 +29,6 @@ my $BLACK_LIST = {
                   'application/x-trash' => 1
                  };
 
-
-has 'dir_index' => ( is => 'ro' , isa => 'Path::Class::Dir' , lazy_build => 1 );
-
-
-sub _build_dir_index{
-  my ($self) = @_;
-
-  if( my $to_index = $self->cse->options()->{dir} ){
-    return Path::Class::Dir->new($to_index);
-  }
-
-  ## Default to the current directory
-  return Path::Class::Dir->new();
-}
 
 sub execute{
   my ($self) = @_;

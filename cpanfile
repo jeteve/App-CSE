@@ -8,6 +8,7 @@ requires 'File::Find';
 requires 'File::MimeInfo::Magic';
 requires 'File::Slurp';
 requires 'File::stat';
+requires 'Filesys::Notify::Simple';
 requires 'Getopt::Long';
 requires 'IO::Interactive';
 requires 'JSON';
@@ -24,6 +25,10 @@ requires 'Term::ProgressBar';
 requires 'Time::HiRes';
 requires 'XML::LibXML';
 
+# For tests.
+
 test_requires 'Test::More';
+test_requires 'File::Slurp';
+test_requires 'File::Copy::Recursive';
 test_requires 'File::Temp';
 test_requires 'Carp::Always';

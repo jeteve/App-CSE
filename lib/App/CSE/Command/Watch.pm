@@ -11,6 +11,10 @@ use App::CSE::File;
 
 use File::MimeInfo::Magic;
 
+use Filesys::Notify::Simple;
+
+use Lucy::Search::IndexSearcher;
+use Lucy::Index::Indexer;
 
 use Log::Log4perl;
 my $LOGGER = Log::Log4perl->get_logger();
@@ -72,7 +76,7 @@ sub execute{
   my $deamon_log = q|log4perl.rootLogger                = INFO, SYSLOG
 log4perl.appender.SYSLOG           = Log::Dispatch::Syslog
 log4perl.appender.SYSLOG.min_level = debug
-log4perl.appender.SYSLOG.ident     = cse|.$cse->version().q|[|.$$.q|]
+log4perl.appender.SYSLOG.ident     = cse V|.$cse->version().q|[|.$$.q|]
 log4perl.appender.SYSLOG.facility  = daemon
 log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
 |;
@@ -81,6 +85,110 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
 
   $LOGGER->info("Watching for changes in ".$self->dir_index().", updating ".$cse->index_dir());
 
+
+  my $lock = 0;
+  my $should_exit = 0;
+
+  $SIG{TERM} = $SIG{INT} = sub{
+    $LOGGER->info("Caught INT or TERM signal. Will exit");
+    unless( $lock ){
+      exit(0);
+    }else{
+      $should_exit = 1;
+    }
+  };
+
+
+
+
+  my $watcher = Filesys::Notify::Simple->new([ $self->dir_index()->absolute()->stringify() ]);
+  $watcher->wait(sub {
+                   my @events = @_;
+
+                   # Lock exiting before we do anything meaty
+                   $lock = 1;
+
+
+
+
+                   eval{
+
+                     # Build an indexer just for this event.
+                     my $searcher = Lucy::Search::IndexSearcher->new( index => $cse->index_dir().'' );
+                     my $indexer =  Lucy::Index::Indexer->new( schema => $searcher->get_schema(),
+                                                               index => $cse->index_dir().'' );
+
+
+
+                     foreach my $event ( @events ) {
+
+                       my $file_name = $event->{path};
+                       # file_path here is absolute.
+                       # $self->dir_index() can be relative
+                       if( $self->dir_index()->is_relative() ){
+                         # We should remove the absolute prefix from the file path
+                         my $abs_prefix = $self->dir_index->absolute()->stringify();
+                         $file_name =~ s/^$abs_prefix/\./ ;
+                       }
+                       $LOGGER->info("File ".$file_name." has changed");
+
+                       # Delete it whatever happened. If it is gone, it
+                       # will simply not be valid anymore.
+                       $indexer->delete_by_term( field => 'path.raw',
+                                                 term => $file_name );
+
+                       # Unreadable files are invalid. This will help
+                       # not adding deleted files.
+                       unless( $cse->is_file_valid( $file_name ) ){
+                         next;
+                       }
+
+                       $LOGGER->info("File ".$file_name." is a valid file");
+
+
+                       my $mime_type = $cse->valid_mime_type($file_name);
+                       unless( $mime_type ){
+                         next;
+                       }
+
+                       my $file_class = App::CSE::File->class_for_mime($mime_type, $file_name.'');
+                       unless( $file_class ){
+                         next;
+                       }
+
+                       ## Build a file instance.
+                       my $file = $file_class->new({cse => $cse,
+                                                    mime_type => $mime_type,
+                                                    file_path => $file_name.'' })->effective_object();
+
+                       my $content = $file->content();
+
+                       $indexer->add_doc({
+                                          path => $file->file_path(),
+                                          'path.raw' => $file->file_path(),
+                                          dir => $file->dir(),
+                                          mime => $file->mime_type(),
+                                          mtime => $file->mtime->iso8601(),
+                                          $content ? ( content => $content ) : ()
+                                         });
+
+                     } # End of event loop
+
+                     $indexer->commit();
+                     $indexer = undef;
+                     $searcher = undef;
+                   };
+                   if( my $err = $@ ){
+                     $LOGGER->error("ERROR reacting to event: $err");
+                   }
+
+                   # Unlock exiting
+                   $lock = 0;
+                   if( $should_exit ){
+                     exit(0);
+                   }
+
+                 });
 
   my $n = 10;
   while($n){

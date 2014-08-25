@@ -18,7 +18,7 @@ sub _build_dir_index{
     return Path::Class::Dir->new($to_index);
   }
 
-  ## Default to the current directory
+  ## Default to the current directory (in a relative way).
   return Path::Class::Dir->new();
 }
 

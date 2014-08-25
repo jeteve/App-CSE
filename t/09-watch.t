@@ -4,21 +4,27 @@ use Test::More;
 use App::CSE;
 
 
+use File::Slurp;
 use File::Temp;
+use File::Copy::Recursive;
+
 use Path::Class::Dir;
 
 use Log::Log4perl qw/:easy/;
 # Log::Log4perl->easy_init($INFO);
 
+
 use File::BaseDir qw//;
 unless( File::BaseDir::data_files('mime/globs') ){
-    plan skip_all => 'No mime-info database on the machine. The shared-mime-info package is available from http://freedesktop.org/';
+  plan skip_all => 'No mime-info database on the machine. The shared-mime-info package is available from http://freedesktop.org/';
 }
 
 
 my $idx_dir = File::Temp->newdir( CLEANUP => 1 );
-my $content_dir = Path::Class::Dir->new('t/toindex');
+my $content_dir = File::Temp->newdir( CLEANUP => 1 );
 
+my $original_content_dir = Path::Class::Dir->new('t/toindex');
+File::Copy::Recursive::dircopy($original_content_dir , $content_dir);
 
 # {
 #   ## Indexing the content dir
@@ -55,7 +61,38 @@ my $watcher_pid;
   ( $watcher_pid ) = ( $watcher_pid =~ /(\d+)/ );
 }
 
+# Create a new pm file and check we can search for it.
 {
+  my $code = q|package My::Shiny::Package
+
+sub abcdefg123{
+   ...
+}
+
+|;
+  my $filename =
+    Path::Class::Dir->new( $content_dir )->file('package.pm')->absolute->stringify();
+  File::Slurp::write_file($filename , $code );
+}
+
+{
+  # Search a few times (timeout is 10 * 5 seconds
+  my $can_continue = 10;
+  do{
+    local @ARGV = ( 'abcdefg123' , '--idx='.$idx_dir );
+    my $cse = App::CSE->new();
+    $cse->command()->execute();
+    $total_hits = $cse->command()->hits()->total_hits();
+  } while( $can_continue-- &&  !$total_hits  && sleep(5) );
+
+  is( $total_hits , 1  , "Ok, total hits is 1 before the timeout");
+
+}
+
+
+
+{
+  # Time to unwatch
   local @ARGV = ( 'unwatch' , '--idx='.$idx_dir );
   my $cse = App::CSE->new();
   ok( $cse->command()->isa('App::CSE::Command::Unwatch') , "Ok good command");

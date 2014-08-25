@@ -10,7 +10,6 @@ use File::Basename;
 use File::Find;
 use File::Path;
 use File::stat;
-use File::MimeInfo::Magic;
 
 use Path::Class::Dir;
 use Lucy::Plan::Schema;
@@ -25,9 +24,6 @@ use Time::HiRes;
 use Log::Log4perl;
 my $LOGGER = Log::Log4perl->get_logger();
 
-my $BLACK_LIST = {
-                  'application/x-trash' => 1
-                 };
 
 
 sub execute{
@@ -83,23 +79,26 @@ sub execute{
 
   my $dir_index = $self->dir_index();
 
+  my $cse = $self->cse();
+
   ## Wrapper to build File::find wanter subs
   my $wanted_wrapper = sub{
     my ($wrapped) = @_;
 
     return sub{
       my $file_name = $File::Find::name;
-      unless( -r $file_name ){
-        $LOGGER->trace("Cannot read $file_name. Skipping");
+
+      my $valid = $cse->is_file_valid($file_name , {
+                                                    on_hidden => sub{
+                                                      $File::Find::prune = 1;
+                                                      return undef;
+                                                    }
+                                                   });
+      unless( $valid ){
         return;
       }
 
       my $stat = File::stat::stat($file_name.'');
-      if( $file_name =~ /\/\.[^\/]+$/ ){
-        $LOGGER->trace("File $file_name is hidden. Skipping");
-        $File::Find::prune = 1;
-        return;
-      }
       &$wrapped($file_name, $stat);
     };
   };
@@ -129,6 +128,7 @@ sub execute{
   my $SIZE_LOOKEDAT = 0;
   my $TOTAL_SIZE = 0;
 
+
   my $wanted = sub{
     my ($file_name, $stat) = @_;
 
@@ -138,9 +138,9 @@ sub execute{
       $PROGRESS_BAR->update($SIZE_LOOKEDAT);
     }
 
-    my $mime_type = File::MimeInfo::Magic::mimetype($file_name.'') || 'application/octet-stream';
 
-    if( $BLACK_LIST->{$mime_type} ){
+    my $mime_type = $cse->valid_mime_type($file_name);
+    unless( $mime_type ){
       return;
     }
 
@@ -150,7 +150,7 @@ sub execute{
     }
 
     ## Build a file instance.
-    my $file = $file_class->new({cse => $self->cse(),
+    my $file = $file_class->new({cse => $cse,
                                  mime_type => $mime_type,
                                  stat => $stat,
                                  file_path => $file_name.'' })->effective_object();
@@ -181,7 +181,7 @@ sub execute{
   $PROGRESS_BAR->update($ESTIMATED_SIZE);
 
 
-  rmtree $self->cse->index_dir()->stringify();
+  rmtree $cse->index_dir()->stringify();
   rename $index_dir , $self->cse->index_dir()->stringify();
 
   $self->cse->index_meta->{index_time} = DateTime->now()->iso8601();

@@ -341,15 +341,16 @@ sub is_file_valid{
     $opts = {};
   }
 
-  unless( -r $file_name ){
-    $LOGGER->trace("Cannot read $file_name. Skipping");
-    return;
-  }
-
-  if( $file_name =~ /\/\.[^\/]+$/ ){
+  if( $file_name =~ /(?:\/|^)\.[^\/\.]+/ ){
     $LOGGER->trace("File $file_name is hidden. Skipping");
     return $opts->{on_hidden} ? &{$opts->{on_hidden}}() : undef;
   }
+
+  unless( -r $file_name ){
+    $LOGGER->trace("Cannot read $file_name. Skipping");
+    return $opts->{on_unreadable} ? &{$opts->{on_unreadable}}() : undef;
+  }
+
   return 1;
 }
 

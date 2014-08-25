@@ -111,14 +111,11 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
 
                      eval{
 
-                       # Build an indexer just for this event.
-                       my $searcher = Lucy::Search::IndexSearcher->new( index => $cse->index_dir().'' );
-                       my $indexer =  Lucy::Index::Indexer->new( schema => $searcher->get_schema(),
-                                                                 index => $cse->index_dir().'' );
 
 
 
                        foreach my $event ( @events ) {
+
 
                          my $file_name = $event->{path};
                          # file_path here is absolute.
@@ -128,21 +125,37 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
                            my $abs_prefix = $self->dir_index->absolute()->stringify();
                            $file_name =~ s/^$abs_prefix/\./ ;
                          }
-                         $LOGGER->info("File ".$file_name." has changed");
-
-                         # Delete it whatever happened. If it is gone, it
-                         # will simply not be valid anymore.
-                         $indexer->delete_by_term( field => 'path.raw',
-                                                   term => $file_name );
 
                          # Unreadable files are invalid. This will help
                          # not adding deleted files.
-                         unless( $cse->is_file_valid( $file_name ) ){
+                         my $is_hidden = 0;
+                         my $is_gone = 0;
+                         $cse->is_file_valid( $file_name , { on_hidden => sub{ $is_hidden = 1 ; return 0;  },
+                                                             on_unreadable => sub{ $is_gone = 1 ; return 0; }
+                                                           } );
+                         if( $is_hidden ){
+                           # We dont do any thing about hidden files.
+                           $LOGGER->info("File $file_name is hidden. Not doing anything about it");
                            next;
                          }
 
-                         $LOGGER->debug("File ".$file_name." is a valid file");
 
+                         # Build an indexer just for this event.
+                         my $searcher = Lucy::Search::IndexSearcher->new( index => $cse->index_dir().'' );
+                         my $indexer =  Lucy::Index::Indexer->new( schema => $searcher->get_schema(),
+                                                                   index => $cse->index_dir().'' );
+
+
+                         # Delete the file anyway.
+                         $LOGGER->info("DELETING $file_name from index");
+                         $indexer->delete_by_term( field => 'path.raw',
+                                                   term => $file_name );
+
+                         # If the file is gone, that is it. We need to commit and go to the next iteration.
+                         if( $is_gone ){
+                           $indexer->commit();
+                           next;
+                         }
 
                          my $mime_type = $cse->valid_mime_type($file_name);
                          unless( $mime_type ){
@@ -161,6 +174,8 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
 
                          my $content = $file->content();
 
+
+                         $LOGGER->info("ADDING $file_name to index as ".$file->mime_type());
                          $indexer->add_doc({
                                             path => $file->file_path(),
                                             'path.raw' => $file->file_path(),
@@ -170,11 +185,9 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
                                             $content ? ( content => $content ) : ()
                                            });
 
+                         $indexer->commit();
                        }        # End of event loop
 
-                       $indexer->commit();
-                       $indexer = undef;
-                       $searcher = undef;
                      };
                      if ( my $err = $@ ) {
                        $LOGGER->error("ERROR reacting to event: $err");
@@ -188,7 +201,7 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
 
                    });
 
-    sleep(2);
+    sleep(10);
   } # End of while !$should_exit
 
 

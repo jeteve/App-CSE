@@ -147,7 +147,7 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
 
 
                          # Delete the file anyway.
-                         $LOGGER->info("DELETING $file_name from index");
+                         $LOGGER->info("Deleting $file_name from index");
                          $indexer->delete_by_term( field => 'path.raw',
                                                    term => $file_name );
 
@@ -159,11 +159,13 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
 
                          my $mime_type = $cse->valid_mime_type($file_name);
                          unless( $mime_type ){
+                           $indexer->commit();
                            next;
                          }
 
                          my $file_class = App::CSE::File->class_for_mime($mime_type, $file_name.'');
                          unless( $file_class ){
+                           $indexer->commit();
                            next;
                          }
 
@@ -175,7 +177,7 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
                          my $content = $file->content();
 
 
-                         $LOGGER->info("ADDING $file_name to index as ".$file->mime_type());
+                         $LOGGER->info("Adding $file_name to index as ".$file->mime_type());
                          $indexer->add_doc({
                                             path => $file->file_path(),
                                             'path.raw' => $file->file_path(),

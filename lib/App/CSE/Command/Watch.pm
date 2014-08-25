@@ -139,7 +139,8 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
                          }
 
 
-                         # Build an indexer just for this event.
+                         # Build an indexer just for this event. This is to avoid complex
+                         # committing logic.
                          my $searcher = Lucy::Search::IndexSearcher->new( index => $cse->index_dir().'' );
                          my $indexer =  Lucy::Index::Indexer->new( schema => $searcher->get_schema(),
                                                                    index => $cse->index_dir().'' );

@@ -11,4 +11,3 @@ install:
 
 script:
    - prove -lr t/
-

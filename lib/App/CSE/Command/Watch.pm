@@ -91,10 +91,10 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
 
   $SIG{TERM} = $SIG{INT} = sub{
     $LOGGER->info("Caught INT or TERM signal. Will exit");
+    $should_exit = 1;
+
     unless( $lock ){
       exit(0);
-    }else{
-      $should_exit = 1;
     }
   };
 
@@ -102,151 +102,99 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
 
 
   my $watcher = Filesys::Notify::Simple->new([ $self->dir_index()->absolute()->stringify() ]);
-  $watcher->wait(sub {
-                   my @events = @_;
+  while( !$should_exit ){
+    $watcher->wait(sub {
+                     my @events = @_;
 
-                   # Lock exiting before we do anything meaty
-                   $lock = 1;
+                     # Lock exiting before we do anything meaty
+                     $lock = 1;
 
+                     eval{
 
-
-
-                   eval{
-
-                     # Build an indexer just for this event.
-                     my $searcher = Lucy::Search::IndexSearcher->new( index => $cse->index_dir().'' );
-                     my $indexer =  Lucy::Index::Indexer->new( schema => $searcher->get_schema(),
-                                                               index => $cse->index_dir().'' );
+                       # Build an indexer just for this event.
+                       my $searcher = Lucy::Search::IndexSearcher->new( index => $cse->index_dir().'' );
+                       my $indexer =  Lucy::Index::Indexer->new( schema => $searcher->get_schema(),
+                                                                 index => $cse->index_dir().'' );
 
 
 
-                     foreach my $event ( @events ) {
+                       foreach my $event ( @events ) {
 
-                       my $file_name = $event->{path};
-                       # file_path here is absolute.
-                       # $self->dir_index() can be relative
-                       if( $self->dir_index()->is_relative() ){
-                         # We should remove the absolute prefix from the file path
-                         my $abs_prefix = $self->dir_index->absolute()->stringify();
-                         $file_name =~ s/^$abs_prefix/\./ ;
-                       }
-                       $LOGGER->info("File ".$file_name." has changed");
+                         my $file_name = $event->{path};
+                         # file_path here is absolute.
+                         # $self->dir_index() can be relative
+                         if ( $self->dir_index()->is_relative() ) {
+                           # We should remove the absolute prefix from the file path
+                           my $abs_prefix = $self->dir_index->absolute()->stringify();
+                           $file_name =~ s/^$abs_prefix/\./ ;
+                         }
+                         $LOGGER->info("File ".$file_name." has changed");
 
-                       # Delete it whatever happened. If it is gone, it
-                       # will simply not be valid anymore.
-                       $indexer->delete_by_term( field => 'path.raw',
-                                                 term => $file_name );
+                         # Delete it whatever happened. If it is gone, it
+                         # will simply not be valid anymore.
+                         $indexer->delete_by_term( field => 'path.raw',
+                                                   term => $file_name );
 
-                       # Unreadable files are invalid. This will help
-                       # not adding deleted files.
-                       unless( $cse->is_file_valid( $file_name ) ){
-                         next;
-                       }
+                         # Unreadable files are invalid. This will help
+                         # not adding deleted files.
+                         unless( $cse->is_file_valid( $file_name ) ){
+                           next;
+                         }
 
-                       $LOGGER->info("File ".$file_name." is a valid file");
+                         $LOGGER->debug("File ".$file_name." is a valid file");
 
 
-                       my $mime_type = $cse->valid_mime_type($file_name);
-                       unless( $mime_type ){
-                         next;
-                       }
+                         my $mime_type = $cse->valid_mime_type($file_name);
+                         unless( $mime_type ){
+                           next;
+                         }
 
-                       my $file_class = App::CSE::File->class_for_mime($mime_type, $file_name.'');
-                       unless( $file_class ){
-                         next;
-                       }
+                         my $file_class = App::CSE::File->class_for_mime($mime_type, $file_name.'');
+                         unless( $file_class ){
+                           next;
+                         }
 
-                       ## Build a file instance.
-                       my $file = $file_class->new({cse => $cse,
-                                                    mime_type => $mime_type,
-                                                    file_path => $file_name.'' })->effective_object();
+                         ## Build a file instance.
+                         my $file = $file_class->new({cse => $cse,
+                                                      mime_type => $mime_type,
+                                                      file_path => $file_name.'' })->effective_object();
 
-                       my $content = $file->content();
+                         my $content = $file->content();
 
-                       $indexer->add_doc({
-                                          path => $file->file_path(),
-                                          'path.raw' => $file->file_path(),
-                                          dir => $file->dir(),
-                                          mime => $file->mime_type(),
-                                          mtime => $file->mtime->iso8601(),
-                                          $content ? ( content => $content ) : ()
-                                         });
+                         $indexer->add_doc({
+                                            path => $file->file_path(),
+                                            'path.raw' => $file->file_path(),
+                                            dir => $file->dir(),
+                                            mime => $file->mime_type(),
+                                            mtime => $file->mtime->iso8601(),
+                                            $content ? ( content => $content ) : ()
+                                           });
 
-                     } # End of event loop
+                       }        # End of event loop
 
-                     $indexer->commit();
-                     $indexer = undef;
-                     $searcher = undef;
-                   };
-                   if( my $err = $@ ){
-                     $LOGGER->error("ERROR reacting to event: $err");
-                   }
+                       $indexer->commit();
+                       $indexer = undef;
+                       $searcher = undef;
+                     };
+                     if ( my $err = $@ ) {
+                       $LOGGER->error("ERROR reacting to event: $err");
+                     }
 
-                   # Unlock exiting
-                   $lock = 0;
-                   if( $should_exit ){
-                     exit(0);
-                   }
+                     # Unlock exiting
+                     $lock = 0;
+                     if ( $should_exit ) {
+                       exit(0);
+                     }
 
-                 });
+                   });
 
-  my $n = 10;
-  while($n){
-    sleep(5)
-  }
+    sleep(2);
+  } # End of while !$should_exit
 
+
+  $LOGGER->warn("Terminating myself. Should not occur");
   exit(0);
 
-  # Now is the time to watch for changes.
-
-  # # Right time to reindex dirty files.
-  # my @dirty_files = sort keys %{$self->cse->dirty_files()};
-  # unless( @dirty_files ){
-  #   $LOGGER->info(&$colored("No dirty files", 'green bold'));
-  #   return 0;
-  # }
-
-  # # Build an indexer.
-  # my $searcher = Lucy::Search::IndexSearcher->new( index => $self->cse()->index_dir().'' );
-  # my $indexer =  Lucy::Index::Indexer->new( schema => $searcher->get_schema(),
-  #                                           index => $self->cse()->index_dir().'' );
-
-  # my $NFILES = 0;
-  # foreach my $dirty_file ( @dirty_files ){
-  #   $indexer->delete_by_term( field => 'path.raw',
-  #                             term => $dirty_file );
-  #   my $mime_type = File::MimeInfo::Magic::mimetype($dirty_file.'') || 'application/octet-stream';
-  #   my $file_class = App::CSE::File->class_for_mime($mime_type, $dirty_file.'');
-  #   unless( $file_class ){
-  #     next;
-  #   }
-
-  #   ## Build a file instance.
-  #   my $file = $file_class->new({cse => $self->cse(),
-  #                                mime_type => $mime_type,
-  #                                file_path => $dirty_file.'' })->effective_object();
-
-  #   $LOGGER->info("Reindexing file $dirty_file as ".$file->mime_type());
-  #   # And index it
-  #   my $content = $file->content();
-  #   $indexer->add_doc({
-  #                      path => $file->file_path(),
-  #                      'path.raw' => $file->file_path(),
-  #                      dir => $file->dir(),
-  #                      mime => $file->mime_type(),
-  #                      mtime => $file->mtime->iso8601(),
-  #                      $content ? ( content => $content ) : ()
-  #                     });
-  #   # Remove from the dirty files hash
-  #   delete $self->cse()->dirty_files()->{$dirty_file};
-  #   $NFILES++;
-  # }
-
-  # # Commit and save that.
-  # $indexer->commit();
-  # $self->cse()->save_dirty_files();
-  # $LOGGER->info(&$colored('Re-indexed '.$NFILES.' files' ,'green bold'));
-  # return 0;
 }
 
 __PACKAGE__->meta->make_immutable();

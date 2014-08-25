@@ -1,4 +1,7 @@
 #! perl -T
+
+use strict;
+
 use Test::More;
 
 use App::CSE;
@@ -62,7 +65,6 @@ my $watcher_pid;
 }
 
 # Create a new pm file and check we can search for it.
-{
   my $code = q|package My::Shiny::Package
 
 sub abcdefg123{
@@ -73,11 +75,11 @@ sub abcdefg123{
   my $filename =
     Path::Class::Dir->new( $content_dir )->file('package.pm')->absolute->stringify();
   File::Slurp::write_file($filename , $code );
-}
 
 {
   # Search a few times (timeout is 10 * 5 seconds
   my $can_continue = 10;
+  my $total_hits = 0;
   do{
     local @ARGV = ( 'abcdefg123' , '--idx='.$idx_dir );
     my $cse = App::CSE->new();
@@ -85,8 +87,23 @@ sub abcdefg123{
     $total_hits = $cse->command()->hits()->total_hits();
   } while( $can_continue-- &&  !$total_hits  && sleep(5) );
 
-  is( $total_hits , 1  , "Ok, total hits is 1 before the timeout");
+  cmp_ok( $total_hits , '>' , 0  , "Ok, total hits is positive before we time out");
+}
 
+
+# Remove the file and see that we cannot find it a bit later
+unlink $filename;
+{
+  my $can_continue = 10;
+  my $total_hits = 0;
+  do{
+    local @ARGV = ( 'abcdefg123' , '--idx='.$idx_dir );
+    my $cse = App::CSE->new();
+    $cse->command()->execute();
+    $total_hits = $cse->command()->hits()->total_hits();
+  } while( $can_continue-- &&  $total_hits  && sleep(5) );
+
+  is( $total_hits , 0  , "Ok, total hits is 0 before the timeout");
 }
 
 

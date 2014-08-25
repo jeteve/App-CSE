@@ -4,6 +4,8 @@ use Moose;
 extends qw/App::CSE::Command/;
 with qw/App::CSE::Role::DirIndex/;
 
+use App::CSE::Command::Unwatch;
+
 use App::CSE::File;
 
 use File::Basename;
@@ -28,6 +30,12 @@ my $LOGGER = Log::Log4perl->get_logger();
 
 sub execute{
   my ($self) = @_;
+
+
+  ## We need to unwatch before indexing. Always.
+  my $unwatch_cmd =  App::CSE::Command::Unwatch->new( { cse => $self->cse() } );
+  $unwatch_cmd->execute();
+
 
   ## We will index as a new dir.
   my $index_dir = $self->cse()->index_dir().'-new';

@@ -4,11 +4,6 @@ use Moose;
 extends qw/App::CSE::Command/;
 with qw/App::CSE::Role::DirIndex/;
 
-
-use App::CSE::Command::Check;
-use App::CSE::Command::Index;
-use App::CSE::File;
-
 use File::MimeInfo::Magic;
 
 

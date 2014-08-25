@@ -11,6 +11,7 @@ requires 'File::stat';
 requires 'Getopt::Long';
 requires 'IO::Interactive';
 requires 'JSON';
+requires 'Log::Dispatch::Syslog';
 requires 'Log::Log4perl';
 requires 'Lucy';
 requires 'Moose';

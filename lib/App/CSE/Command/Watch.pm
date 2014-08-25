@@ -69,6 +69,18 @@ sub execute{
     exit(0);
   }
 
+  my $deamon_log = q|log4perl.rootLogger                = INFO, SYSLOG
+log4perl.appender.SYSLOG           = Log::Dispatch::Syslog
+log4perl.appender.SYSLOG.min_level = debug
+log4perl.appender.SYSLOG.ident     = cse|.$cse->version().q|[|.$$.q|]
+log4perl.appender.SYSLOG.facility  = daemon
+log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
+|;
+
+  Log::Log4perl::init(\$deamon_log);
+
+  $LOGGER->info("Watching for changes in ".$self->dir_index().", updating ".$cse->index_dir());
+
 
   my $n = 10;
   while($n){

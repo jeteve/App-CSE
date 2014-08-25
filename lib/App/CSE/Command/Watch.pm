@@ -134,8 +134,7 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
                                                              on_unreadable => sub{ $is_gone = 1 ; return 0; }
                                                            } );
                          if( $is_hidden ){
-                           # We dont do any thing about hidden files.
-                           $LOGGER->info("File $file_name is hidden. Not doing anything about it");
+                           # We dont do anything about hidden files.
                            next;
                          }
 

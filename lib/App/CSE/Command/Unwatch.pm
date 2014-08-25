@@ -22,7 +22,7 @@ sub execute{
 
   my $previous_pid = $cse->index_meta()->{'watcher.pid'};
   unless( $previous_pid ){
-    $LOGGER->warn(&$colored("No watcher PID in ".$cse->index_meta_file()." - nothing to do"));
+    $LOGGER->warn("No watcher PID in ".$cse->index_meta_file()." - nothing to do");
     return 1;
   }
 

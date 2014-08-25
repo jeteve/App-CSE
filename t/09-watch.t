@@ -78,14 +78,15 @@ sub abcdefg123{
 
 {
   # Search a few times (timeout is 10 * 5 seconds
-  my $can_continue = 10;
+  my $can_continue = 20;
   my $total_hits = 0;
+  my $sleep_time = 1;
   do{
     local @ARGV = ( 'abcdefg123' , '--idx='.$idx_dir );
     my $cse = App::CSE->new();
     $cse->command()->execute();
     $total_hits = $cse->command()->hits()->total_hits();
-  } while( $can_continue-- &&  !$total_hits  && sleep(5) );
+  } while( $can_continue-- &&  !$total_hits  && sleep($sleep_time++) );
 
   cmp_ok( $total_hits , '>' , 0  , "Ok, total hits is positive before we time out");
 }
@@ -94,14 +95,15 @@ sub abcdefg123{
 # Remove the file and see that we cannot find it a bit later
 unlink $filename;
 {
-  my $can_continue = 10;
+  my $can_continue = 20;
   my $total_hits = 0;
+  my $sleep_time = 1;
   do{
     local @ARGV = ( 'abcdefg123' , '--idx='.$idx_dir );
     my $cse = App::CSE->new();
     $cse->command()->execute();
     $total_hits = $cse->command()->hits()->total_hits();
-  } while( $can_continue-- &&  $total_hits  && sleep(5) );
+  } while( $can_continue-- &&  $total_hits  && sleep($sleep_time++) );
 
   is( $total_hits , 0  , "Ok, total hits is 0 before the timeout");
 }

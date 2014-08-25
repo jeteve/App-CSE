@@ -22,6 +22,10 @@ unless( File::BaseDir::data_files('mime/globs') ){
   plan skip_all => 'No mime-info database on the machine. The shared-mime-info package is available from http://freedesktop.org/';
 }
 
+if( $ENV{TRAVIS_PERL_VERSION} ){
+  plan skip_all => 'Do not run that in travis. Its a bit too slow';
+}
+
 
 my $idx_dir = File::Temp->newdir( CLEANUP => 1 );
 my $content_dir = File::Temp->newdir( CLEANUP => 1 );

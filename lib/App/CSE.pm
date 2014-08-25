@@ -57,6 +57,8 @@ See L<App::CSE::Command::Help> For a description the available commands.
 
 =item Dirty files indicator
 
+=item Directory watcher
+
 =item Declaration queries (Perl subs and packages)
 
 =item Directory filtering

@@ -21,7 +21,7 @@ requires 'Pod::Text';
 requires 'PPI';
 requires 'Scalar::Util';
 requires 'String::CamelCase';
-requires 'Term::ProgressBar';
+requires 'Term::ProgressBar', '>= 2.17';
 requires 'Time::HiRes';
 requires 'XML::LibXML';
 

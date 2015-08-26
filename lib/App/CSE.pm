@@ -347,7 +347,7 @@ sub is_file_valid{
   }
 
   unless( -r $file_name ){
-    $LOGGER->trace("Cannot read $file_name. Skipping");
+    $LOGGER->warn("Cannot read $file_name. Skipping");
     return $opts->{on_unreadable} ? &{$opts->{on_unreadable}}() : undef;
   }
 

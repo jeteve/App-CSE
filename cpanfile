@@ -14,14 +14,16 @@ requires 'IO::Interactive';
 requires 'JSON';
 requires 'Log::Dispatch::Syslog';
 requires 'Log::Log4perl';
-requires 'Lucy';
+requires 'Lucy' , '>= 0.006000004';
 requires 'Moose';
 requires 'Path::Class::Dir';
 requires 'Pod::Text';
 requires 'PPI';
+requires 'Regexp::Assemble';
 requires 'Scalar::Util';
 requires 'String::CamelCase';
 requires 'Term::ProgressBar', '>= 2.17';
+requires 'Text::Glob', '>= 0.09';
 requires 'Time::HiRes';
 requires 'XML::LibXML';
 

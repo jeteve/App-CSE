@@ -33,7 +33,7 @@ my $cse;
 {
   ## Searching just for bonjour
   local @ARGV = ( 'bonjour' ,  '--idx='.$idx_dir  , '--dir='.$content_dir );
-  $cse = App::CSE->new();
+  $cse = App::CSE->new({ cseignore => undef });
   ok( $cse->command()->isa('App::CSE::Command::Search') , "Ok its a search command");
   is_deeply( $cse->args() , [ 'bonjour' ] );
 }
@@ -41,13 +41,13 @@ my $cse;
 
 my @hidden_files = ( './.cse.idx/snapshot_5h.json.temp',
                      '.cse/index.json',
-                     
-                   );
+                 );
 
 foreach my $hidden_file ( @hidden_files ){
-  my $hidden = 0;
-  $cse->is_file_valid($hidden_file, { on_hidden => sub{ $hidden = 1; } });
-  is( $hidden , 1 , "Hidden is 1 for file $hidden_file");
+    my $hidden = 0;
+    ok( ! $cse->ignore_reassembl()->match( $hidden_file ), "Matching $hidden_file" );
+    $cse->is_file_valid($hidden_file, { on_hidden => sub{ $hidden = 1; } });
+    is( $hidden , 1 , "Hidden is 1 for file $hidden_file");
 }
 
 

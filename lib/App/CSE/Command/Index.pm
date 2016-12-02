@@ -100,6 +100,10 @@ sub execute{
                                                     on_hidden => sub{
                                                       $File::Find::prune = 1;
                                                       return undef;
+                                                    },
+                                                    on_skip => sub{
+                                                      $File::Find::prune = 1;
+                                                      return undef;
                                                     }
                                                    });
       unless( $valid ){

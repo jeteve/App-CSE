@@ -11,6 +11,7 @@ package App::CSE;
 
 use Moose;
 use Class::Load;
+use Cwd;
 use App::CSE::Colorizer;
 use DateTime;
 use File::MimeInfo::Magic;
@@ -21,6 +22,8 @@ use String::CamelCase;
 use Path::Class::Dir;
 use File::stat;
 use Getopt::Long qw//;
+use Regexp::Assemble;
+use Text::Glob;
 use XML::LibXML;
 
 use Log::Log4perl qw/:easy/;
@@ -64,6 +67,8 @@ See L<App::CSE::Command::Help> For a description the available commands.
 =item Directory filtering
 
 =item Paging
+
+=item Ignoring files
 
 =item Works with Perl 5.8.8 up to 5.20
 
@@ -147,6 +152,10 @@ has 'index_meta' => ( is => 'ro', isa => 'HashRef[Str]', lazy_build => 1);
 # File utilities
 has 'xml_parser' => ( is => 'ro' , isa => 'XML::LibXML', lazy_build => 1);
 
+# Environment slurping
+has 'cseignore' => ( is => 'ro', isa => 'Maybe[Path::Class::File]', lazy_build => 1 );
+has 'ignore_reassembl' => ( is => 'ro', isa => 'Regexp::Assemble', lazy_build => 1);
+
 {# Singleton flavour
   my $instance;
   sub BUILD{
@@ -156,6 +165,32 @@ has 'xml_parser' => ( is => 'ro' , isa => 'XML::LibXML', lazy_build => 1);
   sub instance{
     return $instance;
   }
+}
+
+sub _build_cseignore{
+    my ($self) = @_;
+    my $file = Path::Class::Dir->new()->file('.cseignore');
+    unless( -e $file ){
+        return;
+    }
+    $LOGGER->info("Will ignore patterns from '$file'");
+    return $file;
+}
+
+sub _build_ignore_reassembl{
+    my ($self) = @_;
+    my $re = Regexp::Assemble->new();
+    if( my $cseignore = $self->cseignore() ){
+        my @lines = split(q/\n/ , $cseignore->slurp());
+        foreach my $line ( @lines ){
+            if( $line =~ /^\s*(?:#|$)/ ){
+                next;
+            }
+            $line =~ s/^\s*//; $line =~ s/\s*$//;
+            $re->add( Text::Glob::glob_to_regex_string( $line ) );
+        }
+    }
+    return $re;
 }
 
 sub _build_xml_parser{
@@ -339,6 +374,11 @@ sub is_file_valid{
 
   unless( defined( $opts ) ){
     $opts = {};
+  }
+
+  if( $self->ignore_reassembl()->match( $file_name ) ){
+      $LOGGER->trace("File $file_name is ignoreed. Skipping");
+      return $opts->{on_skip} ? &{$opts->{on_skip}}() : undef;
   }
 
   if( $file_name =~ /(?:\/|^)\.[^\/\.]+/ ){

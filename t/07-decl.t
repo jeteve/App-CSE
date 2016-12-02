@@ -36,14 +36,15 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   is( $cse->command()->hits()->total_hits() , 2 , "Ok two hits");
 }
 
-{
-  ## Searching for some method, but excluding the declaration
-  local @ARGV = (  '--idx='.$idx_dir, 'some_method', '-decl:some_method', '--dir='.$content_dir.'');
-  my $cse = App::CSE->new();
-  is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
-  ok( $cse->command()->hits() , "Ok got hits");
-  is( $cse->command()->hits()->total_hits() , 1 , "Ok one hit only");
-}
+SKIP: {
+    skip "Perl too old.", 3  unless ( $] ge '5.14' );
+    ## Searching for some method, but excluding the declaration
+    local @ARGV = (  '--idx='.$idx_dir, 'some_method', '-decl:some_method', '--dir='.$content_dir.'');
+    my $cse = App::CSE->new();
+    is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
+    ok( $cse->command()->hits() , "Ok got hits");
+    is( $cse->command()->hits()->total_hits() , 1 , "Ok one hit only");
+};
 
 ok(1);
 done_testing();

@@ -8,6 +8,11 @@ perl:
   - "5.10"
   - "5.8"
 
+cache:
+  directories:
+    - $HOME/perl5/perlbrew/perls/$TRAVIS_PERL_VERSION/lib/site_perl/
+    - $HOME/perl5/perlbrew/perls/$TRAVIS_PERL_VERSION/bin/
+
 install:
    - cpanm --quiet --notest --installdeps .
 

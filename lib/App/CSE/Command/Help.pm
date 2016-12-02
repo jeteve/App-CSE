@@ -172,6 +172,17 @@ Be more verbose.
 
 =back
 
+
+=head1 IGNORING FILES
+
+Just like you often want to ignore files managed by your CVS, you probably want cse to ignore some of your files
+at index time.
+
+To have cse ignore files, create a .cseignore file in your current directory and add one pattern to ignore per line.
+Patterns should be compatible with L<Text::Glob> and are very similar to .gitignore patterns.
+
+With a bit of luck, you should be able to just link .cseignore to your .gitignore and things should just work.
+
 =head1 COPYRIGHT
 
 Copyright 2014 Jerome Eteve.

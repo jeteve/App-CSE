@@ -65,6 +65,22 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
 }
 
 {
+    # Indexing with .cseignore
+    local @ARGV = ( 'index' , '--idx='.$idx_dir , '--dir='.$content_dir.'' );
+    my $cse = App::CSE->new({ cseignore => $content_dir->file('cseignore') });
+    is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
+}
+
+{
+  ## Searching the content dir for ignored
+  local @ARGV = (  '--idx='.$idx_dir, 'ignored', '--dir='.$content_dir.'');
+  my $cse = App::CSE->new();
+  is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
+  ok( $cse->command()->hits() , "Ok got hits");
+  is( $cse->command()->hits()->total_hits() , 0 , "Ok go zero hit");
+}
+
+{
   ## Searching the content_dir/text_files/ for bonjour. Shouldnt not find anything.
   local @ARGV = (  '--idx='.$idx_dir, 'bonjour', $content_dir.'/text_files');
   my $cse = App::CSE->new();

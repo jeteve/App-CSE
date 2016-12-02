@@ -25,7 +25,12 @@ unless( File::BaseDir::data_files('mime/globs') ){
 
   local @ARGV = ( 'index' , '--idx='.$idx_dir , '--dir='.$content_dir.'' );
 
-  my $cse = App::CSE->new();
+  my $cse = App::CSE->new({ cseignore => $content_dir->file('cseignore') });
+
+  ok( $cse->cseignore(), "Ok found cse ignore file");
+  ok( $cse->ignore_reassembl() , "Ok got an ignore regexp");
+  ok( ! $cse->ignore_reassembl()->match('will-be-indexed') , "Ok no match");
+  ok( $cse->ignore_reassembl()->match('/a/b/c-ignored') , "Ok got match");
 
   # is_deeply( $cse->args() , [ $content_dir ], "Ok good args");
 

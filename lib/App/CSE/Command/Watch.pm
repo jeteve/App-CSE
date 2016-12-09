@@ -131,7 +131,8 @@ log4perl.appender.SYSLOG.layout    = Log::Log4perl::Layout::SimpleLayout
                          my $is_hidden = 0;
                          my $is_gone = 0;
                          $cse->is_file_valid( $file_name , { on_hidden => sub{ $is_hidden = 1 ; return 0;  },
-                                                             on_unreadable => sub{ $is_gone = 1 ; return 0; }
+                                                             on_unreadable => sub{ $is_gone = 1 ; return 0; },
+                                                             on_skip => sub{ $is_gone = 1 ; return 0; } # Consider skipped files as gone.
                                                            } );
                          if( $is_hidden ){
                            # We dont do anything about hidden files.

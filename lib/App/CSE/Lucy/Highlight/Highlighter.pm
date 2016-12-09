@@ -53,7 +53,7 @@ sub highlight{
   my $cse = $cse{ $self };
 
   if( $cse->interactive() ){
-    return $cse->colorizer->colored($text , 'white bold');
+    return $cse->colorizer->colored($text , 'yellow on_black');
   }else{
     return '[>'.$text.'<]';
   }

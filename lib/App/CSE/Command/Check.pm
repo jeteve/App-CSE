@@ -52,7 +52,15 @@ sub execute{
 
 All the files will be considered to be application/octet-stream at index time, making the search useless.
 
-The shared-mime-info package is available from http://freedesktop.org/ or from your OS package manager|, 'yellow bold'));
+The shared-mime-info package is available from http://freedesktop.org/
+
+On linux:
+  Check your  package manager
+
+On OSX:
+  brew install shared-mime-info
+
+|, 'yellow bold'));
       return 1;
   }
 

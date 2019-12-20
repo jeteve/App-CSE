@@ -50,10 +50,17 @@ sub execute{
   foreach my $dirty_file ( @dirty_files ){
     $indexer->delete_by_term( field => 'path.raw',
                               term => $dirty_file );
+    unless( -e $dirty_file ){
+        # File is gone.
+        delete $self->cse()->dirty_files()->{$dirty_file};
+        next;
+    }
+    
     my $mime_type = File::MimeInfo::Magic::mimetype($dirty_file.'') || 'application/octet-stream';
     my $file_class = App::CSE::File->class_for_mime($mime_type, $dirty_file.'');
     unless( $file_class ){
-      next;
+        $LOGGER->warn("Cannot reindex Mimetype $mime_type for $dirty_file is not supported anymore?");
+        next;
     }
 
     ## Build a file instance.

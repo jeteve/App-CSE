@@ -11,4 +11,3 @@ $hello->some_method();
 Hello::class_method();
 
 exported_method();
-

@@ -65,6 +65,17 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
 }
 
 {
+  ## Searching the content dir for exported_method.
+  local @ARGV = (  '--idx='.$idx_dir, 'call:exported_method', '--dir='.$content_dir.'');
+  my $cse = App::CSE->new();
+  is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
+  ok( $cse->command()->isa('App::CSE::Command::Search') , "Ok got search");
+  is( $cse->command()->query->to_string() , 'call:exported_method');
+  ok( $cse->command()->hits() , "Ok got hits");
+  is( $cse->command()->hits()->total_hits() , 1 , "Ok got one hit");
+}
+
+{
     # Indexing with .cseignore
     local @ARGV = ( 'index' , '--idx='.$idx_dir , '--dir='.$content_dir.'' );
     my $cse = App::CSE->new({ cseignore => $content_dir->file('cseignore') });

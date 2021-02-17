@@ -87,6 +87,9 @@ Examples:
    ## Search for some_method, excluding the files declaring it:
    cse some_method -decl:some_method
 
+   ## Search for files where a given method is called:
+   cse call:some_method
+
 =head3 search syntax
 
 In addition of searching for simple terms, cse supports "advanced" searches using Lucy/Lucene-like query syntax.

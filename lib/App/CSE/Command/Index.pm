@@ -58,6 +58,7 @@ sub execute{
   my $path_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, sortable => 1, boost => 2.0);
   my $body_type = Lucy::Plan::FullTextType->new(analyzer => $ft_anal, highlightable => 1 , boost => 1.0);
   my $declare_type = Lucy::Plan::FullTextType->new( analyzer => $decl_anal, highlightable => 1 , boost => 4.0 );
+  my $call_type    = Lucy::Plan::FullTextType->new( analyzer => $decl_anal, highlightable => 1 , boost => 3.0 );
 
 
   # String type
@@ -69,6 +70,7 @@ sub execute{
 
   $schema->spec_field( name => 'content' , type => $body_type );
   $schema->spec_field( name => 'decl' , type => $declare_type );
+  $schema->spec_field( name => 'call' , type => $call_type );
   $schema->spec_field( name => 'dir'  , type => $plain_sortable_string );
   $schema->spec_field( name => 'mtime' , type => $plain_sortable_string);
   $schema->spec_field( name => 'mime' , type => $plain_sortable_string );
@@ -175,6 +177,7 @@ sub execute{
                        path => $file->file_path(),
                        'path.raw' => $file->file_path(),
                        decl => join(' ', @{$file->decl()}),
+		       call => join(' ', @{$file->call()}),
                        dir => $file->dir(),
                        mime => $file->mime_type(),
                        mtime => $file->mtime->iso8601(),

@@ -216,7 +216,7 @@ sub _build_query{
   # }
 
   my $analyzer;
-  my $fields = [ 'content' , 'decl', 'path' ];
+  my $fields = [ 'content' , 'decl', 'call', 'path' ];
 
   if( $self->query_str() =~ /\*/ ){
     # Let the query parser keep the *'s

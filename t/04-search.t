@@ -58,7 +58,7 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   my $cse = App::CSE->new();
   is( $cse->command()->execute(), 0 , "Ok execute has terminated just fine");
   ok( $cse->command()->isa('App::CSE::Command::Search') , "Ok got search");
-  is( $cse->command()->query->to_string() , '(content:bonjour OR decl:bonjour OR path:bonjour)' , "Ok got good query");
+  is( $cse->command()->query->to_string() , '(call:bonjour OR content:bonjour OR decl:bonjour OR path:bonjour)' , "Ok got good query");
   ok( $cse->command()->hits() , "Ok got hits");
   is( $cse->command()->hits()->total_hits() , 2 , "Ok got two hits");
   ok( $cse->index_mtime() , "Ok got index mtime");
@@ -104,7 +104,7 @@ my $content_dir = Path::Class::Dir->new('t/toindex');
   local @ARGV = (  '--idx='.$idx_dir, 'hello', '--dir='.$content_dir.'');
   my $cse = App::CSE->new();
   use Data::Dumper;
-  is($cse->command->query()->to_string() , '(content:hello OR decl:hello OR path:hello)');
+  is($cse->command->query()->to_string() , '(call:hello OR content:hello OR decl:hello OR path:hello)');
 }
 
 {
